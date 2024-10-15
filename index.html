@@ -1,0 +1,3267 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>TShirt O2</title>
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">	
+		<script src="js/signals.min.js"></script>
+		<script src="js/snap.svg-min.js"></script>
+		<script src="js/three.min.js"></script>
+		<script src="js/GLTFLoader.js"></script>
+		<script src="js/OrbitControls.js"></script>
+        <style type="text/css">
+            html {
+                background-color: #f0f0f5;
+                font-family: 'Arial', sans-serif;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
+    
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                display: flex;
+            }
+    
+            #texture-factory-container, #svg-pattern-library-container {
+                position: absolute;
+                left: -9999px;
+                top: -9999px;
+            }
+    
+            *:not(input) {
+                user-select: none;
+            }
+    
+            #ui {
+                width: 280px;
+                background: #ffffff;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                z-index: 2;
+                padding: 20px;
+                overflow: auto;
+            }
+    
+            #tabs {
+                margin-bottom: 20px;
+            }
+    
+            #tablist {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 10px;
+            }
+    
+            [role='tab'] {
+                border: none;
+                padding: 10px 15px;
+                background: #000000;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background 0.3s;
+            }
+    
+            [role='tab']:hover {
+                background: #0c7a0c;
+            }
+    
+            [aria-selected="true"] {
+                background-color: #000000;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            }
+    
+            [role='tabpanel'] {
+                padding: 10px;
+            }
+    
+            .hidden {
+                display: none;
+            }
+    
+            #viewport-container, #viewport
+			{
+				position:absolute;
+				left:0;
+				top:0;
+				right:0;
+				bottom:0;
+			}
+            #dialogs {
+                position: absolute;
+                z-index: 99;
+            }
+    
+            .dialog-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                left: 0;
+                background: rgba(0, 0, 0, 0.5);
+            }
+    
+            .dialog-backdrop.active {
+                display: block;
+            }
+    
+            [role="dialog"] {
+                padding: 20px;
+                border: 1px solid #ddd;
+                background-color: #ffffff;
+                position: absolute;
+                display: block;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                box-shadow: 0 24px 48px rgba(0, 0, 0, 0.1), 0 16px 16px rgba(0, 0, 0, 0.25);
+                border-radius: 8px;
+            }
+    
+            #dialog-image-library > [role="dialog"], #dialog-pattern-library > [role="dialog"] {
+                width: 75vw;
+                height: 75vh;
+            }
+    
+            .dialog-image-list {
+                overflow-y: scroll;
+                height: calc(100% - 40px);
+            }
+    
+            .dialog-form-actions {
+                margin-bottom: 20px;
+            }
+    
+            .dialog-image-list-item {
+                width: 200px;
+                height: 220px;
+                float: left;
+                padding: 5px;
+            }
+    
+            .dialog-image-list-item-image {
+                width: 100%;
+                height: 200px;
+                object-fit: contain;
+                background-color: #efefef;
+                border: solid 1px #ccc;
+                border-radius: 4px;
+            }
+    
+            .dialog-image-list-preview {
+                width: 170px;
+                height: 170px;
+                border: solid 3px #000000;
+                border-radius: 4px;
+            }
+    
+            .dialog-pattern-preview {
+                width: 600px;
+                height: 400px;
+                background-color: #efefef;
+                border: solid 1px #ccc;
+                border-radius: 4px;
+            }
+    
+            .dialog-pattern-editor img {
+                border: solid 1px #ccc;
+                border-radius: 4px;
+            }
+    
+            .dialog-form {
+                margin: 10px 0;
+            }
+    
+            .dialog-form-actions {
+                text-align: right;
+            }
+    
+            #ttime {
+                font-size: 12px;
+                color: #888;
+            }
+    
+            button {
+                background: #000000;
+                color: rgb(255, 255, 255);
+                border: none;
+                padding: 10px 15px;
+                text-align: center;
+                text-decoration: none;
+                display: inline-block;
+                font-size: 14px;
+                margin: 4px 2px;
+                cursor: pointer;
+                border-radius: 4px;
+                transition: background 0.3s;
+            }
+    
+            button:hover {
+                background: #0c7a0c;
+            }
+    
+            input[type="file"], input[type="text"], select, input[type="range"], input[type="checkbox"] {
+                margin: 10px 0;
+                padding: 8px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                width: calc(100% + 18px);
+                box-sizing: border-box;
+            }
+            
+
+            input[type="color"]{
+                margin: 10px 0;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                width: calc(100% + 18px);
+                box-sizing: border-box;
+            }
+
+
+            input[type="file"] {
+                display: none;
+            }
+    
+            hr {
+                border: 0;
+                height: 1px;
+                background: #ddd;
+                margin: 20px 0;
+            }
+            
+            
+        </style>
+    </head>
+    <body>
+        <div id="texture-factory-container"></div>
+        <div id="svg-pattern-library-container"></div>
+        <div id="viewport-container">
+            <canvas id="viewport"></canvas>
+        </div>
+        <div id="ui">
+            <div id="tabs">
+                <div id="tablist">
+                    <button id="tab-design" role="tab" aria-selected="false" aria-controls="tabpanel-design">Design</button>
+                    <button id="tab-colors" role="tab" aria-selected="false" aria-controls="tabpanel-colors">Colors</button>
+                    <button id="tab-text" role="tab" aria-selected="false" aria-controls="tabpanel-text">Text</button>
+                    <button id="tab-logo" role="tab" aria-selected="false" aria-controls="tabpanel-logo">Logo</button>
+                </div>
+                <div id="tabpanel-design" role="tabpanel" hidden="hidden">
+                    <select id="tabpanel-design-select"></select>
+                </div>
+                <div id="tabpanel-colors" role="tabpanel" hidden="hidden"></div>
+                <div id="tabpanel-text" role="tabpanel" hidden="hidden">
+                    <button id="tabpanel-actions-add-text" hidden="hidden">Add</button>
+                    <div id="tabpanel-text-controls" hidden="hidden">
+                        <input type="text" id="tabpanel-text-input" /><button id="tabpanel-actions-delete-text">Delete</button><br />
+                        <hr />
+                        <span>Font</span><select id="tabpanel-text-font-select"></select><br />
+                        <hr />
+                        <span>Color</span><input id="tabpanel-text-fill-color-input" type="color" /><br />
+                        <hr />
+                        <span>Stroke</span><input id="tabpanel-text-stroke" type="checkbox" /><br />
+                        <input id="tabpanel-text-stroke-color-input" type="color" />
+                        <input id="tabpanel-text-stroke-width-input" type="range" step="1" min="1" max="12" />
+                        <hr />
+                        <span>Locked</span><input id="tabpanel-text-locked" type="checkbox" />
+                    </div>
+                </div>
+                <div id="tabpanel-logo" role="tabpanel" hidden="hidden">
+                    <input type="file" id="tabpanel-logo-file-input" accept=".jpg, .jpeg, .png" /> 
+                    <button id="tabpanel-actions-upload-image">Upload Image</button>
+                    <button id="tabpanel-actions-show-image-library" class="hidden">Use Existing Images</button>
+                    <div id="tabpanel-logo-controls" hidden="hidden">
+                        <span>Locked</span><input id="tabpanel-logo-locked" type="checkbox" />
+                    </div>
+                </div>
+            </div>
+            
+            <br />
+            <span id="ttime">0</span><br /><br />
+            <button id="export-to-svg-button">Export to SVG</button><br />
+            <button id="export-to-png-button">Export to PNG</button>
+        </div>
+        <div id="dialogs">
+            <div id="dialog-add-text" class="dialog-backdrop">
+                <div role="dialog">
+                    <div class="dialog-form">
+                      <label>
+                        <span>Text</span>
+                        <input type="text" class="dialog-input" />
+                      </label>
+                    </div>
+                    <div class="dialog-form-actions">
+                        <button class="dialog-action-add">Add</button>
+                        <button class="dialog-action-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="dialog-image-library" class="dialog-backdrop">
+                <div role="dialog">
+                    <div class="dialog-form-actions">
+                        <button class="dialog-action-close">Close</button>
+                    </div>
+                    <div class="dialog-image-list">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="dialog-pattern-library" class="dialog-backdrop">
+                <div role="dialog">
+                    <div class="dialog-form-actions">
+                        <button class="dialog-action-close">Close</button>
+                    </div>
+                    <div class="dialog-image-list">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="dialog-pattern-editor" class="dialog-backdrop">
+                <div role="dialog">
+                    <div class="dialog-form-actions">
+                        <button class="dialog-action-close">Close</button>
+                    </div>
+                    <div class="dialog-content">
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+		<script type="text/javascript">
+			window.onload = () =>
+			{
+				console.clear(); 
+
+
+				const View3D = ( { domContainer, textureFactory, model, matCapURL, normalMapURL } ) => 
+				{
+					const _raycaster = new THREE.Raycaster();
+					const _raycasterCoords = new THREE.Vector2();
+					const _matcap = matCapURL ? new THREE.TextureLoader().load( matCapURL ) : null;
+					const _normalmap = normalMapURL ? new THREE.TextureLoader().load( normalMapURL ) : null;
+						 
+					if( _normalmap ) 
+						_normalmap.flipY = false;
+						
+					console.log( _normalmap );
+					
+					const _material = new THREE.MeshMatcapMaterial
+						( { 
+							side:THREE.FrontSide, 
+							map:textureFactory.getTexture(),
+							normalMap:_normalmap,
+							matcap:_matcap 
+						} ); 
+						
+					const _backMaterial = new THREE.MeshMatcapMaterial
+						( { 
+							color:0xCCCCCC, //0xBBBBBB,
+							side:THREE.BackSide, 
+							// map:textureFactory.getTexture(),
+							matcap:_matcap,
+							normalMap:_normalmap,							
+						} ); 
+
+					let _width = 0;
+					let _height = 0;
+					let _renderer, 
+						_camera, 
+						_scene, 
+						_controls, 
+						_container, 
+						_surface;
+						
+					const setSize = ( w, h ) =>
+					{
+						_width = w;
+						_height = h;
+
+						_camera.aspect = _width / _height;
+						_camera.updateProjectionMatrix();
+
+						_renderer.setSize( _width, _height );	
+					};
+					
+					const screenToUV = ( sx, sy ) => 
+					{
+						const vr = _renderer.domElement.getBoundingClientRect();
+						const vpx = sx - vr.x;
+						const vpy = sy - vr.y;
+
+						_raycasterCoords.x = ( vpx / _width ) * 2 - 1;
+						_raycasterCoords.y = -( vpy / _height ) * 2 + 1;
+						_raycaster.setFromCamera( _raycasterCoords, _camera );
+						
+						const intersects = _raycaster.intersectObjects( model.scene.children );
+						
+						if( intersects.length > 0 )
+							return { x:intersects[ 0 ].uv.x, y:intersects[ 0 ].uv.y, isPointOnSurface:true };
+						else 
+							return { x:0, y:0, isPointOnSurface:false };
+					};
+						
+					const onDocMouseMove = ( event ) => 
+					{
+						if( event.button != 0 ) return;
+						
+						const sx = event.clientX;
+						const sy = event.clientY;
+						const uv = screenToUV( sx, sy );
+						
+						textureFactory.setPointer( sx, sy, uv.x, uv.y, uv.isPointOnSurface );
+					};
+
+					const onDocMouseDown = ( event ) => 
+					{	
+						if( event.button != 0 ) return;
+
+						onDocMouseMove( event );
+						textureFactory.setPointerDown( true );
+					};
+					
+					const onDocMouseUp = ( event ) => 
+					{
+						if( event.button != 0 ) return;
+						
+						onDocMouseMove( event );
+						textureFactory.setPointerDown( false );
+					};
+					
+					const render = ( timestamp ) =>
+					{
+						const vw = domContainer.offsetWidth; // / 2;
+						const vh = domContainer.offsetHeight;
+						
+						if( timestamp === undefined || vw != _width || vh != _height )
+						{
+							setSize( vw, vh );
+							
+							let box = new THREE.Box3();
+								box.expandByObject( _container );
+
+							let size = box.getSize( new THREE.Vector3() );
+							let center = box.getCenter( new THREE.Vector3() );
+
+							let maxSize = Math.max( size.x, size.y, size.z );
+							let fitHeightDistance = maxSize / ( 2 * Math.atan( Math.PI * _camera.fov / 360 ) );
+							let fitWidthDistance = fitHeightDistance / _camera.aspect;
+							let distance = Math.max( fitHeightDistance, fitWidthDistance );
+
+							let direction = _controls.target.clone()
+								.sub( _camera.position )
+								.normalize()
+								.multiplyScalar( distance );						
+
+							_controls.minDistance = _controls.maxDistance = distance * 1.2;
+							_controls.target.copy( center );
+							_controls.update();
+							
+							_controls.minDistance /= 2;
+							_controls.maxDistance *= 2;
+
+							_camera.near = distance / 100;
+							_camera.far = distance * 100;
+							_camera.updateProjectionMatrix();
+
+							_camera.position.copy( _controls.target ).sub( direction );
+						}
+
+						_controls.update();
+						
+						_renderer.render( _scene, _camera );
+						
+						requestAnimationFrame( render );
+					};
+
+
+					const getDistance = ( x1, y1, x2, y2 ) => 
+					{
+						const a = x1 - x2;
+						const b = y1 - y2;
+
+						return Math.sqrt( a * a + b * b );
+					};
+
+					const freeze = ( value ) => 
+					{
+						_controls.enabled = !value;
+						_renderer.setClearColor( value ? 0x333333 : 0xFFFFFF );
+						_renderer.domElement.style.cursor = value ? 'crosshair' : 'auto';
+					};					
+
+					model.scene.traverse( object =>
+					{
+						if( object.isMesh )
+						{
+							if( /*object.name == 'model1' &&*/ _surface == null )
+							{
+								_surface = object;
+								_surface.material = _material;
+								
+								let surfaceClone = _surface.clone();
+									surfaceClone.material = _backMaterial;
+										
+								_surface.parent.add( surfaceClone );
+							}
+							else 
+							{
+								object.material = new THREE.MeshMatcapMaterial
+								( { 
+									side:THREE.DoubleSide, 
+									map:object.material.map,
+									normalMap:object.material.normalMap,
+									color:object.material.color,
+									matcap:matcap 
+								} );
+							}
+						}
+					} );
+
+					_renderer = new THREE.WebGLRenderer( { antialias:true, alpha:false, stencil:false } );
+					_renderer.domElement.id = 'viewport';
+					_renderer.setPixelRatio( window.devicePixelRatio );
+					_renderer.setSize( _width, _height );
+					_renderer.setClearColor( 0xFFFFFF );
+
+					_camera = new THREE.PerspectiveCamera( 55, _width / _height, 1, 100 );
+					_camera.position.set( 0, 1, 0 );
+
+					_scene = new THREE.Scene();
+					_scene.add( _camera );	
+					
+					_container = new THREE.Object3D();
+					_container.add( model.scene );
+
+					_scene.add( _container );
+					
+					_controls = new THREE.OrbitControls( _camera, _renderer.domElement );
+					_controls.autoRotate = false;
+					_controls.enablePan = false;
+					_controls.enableKeys = false;
+					_controls.minPolarAngle = Math.PI / 180 * 70;
+					_controls.maxPolarAngle = Math.PI / 180 * 70;
+					_controls.minAzimuthAngle = _controls.maxAzimuthAngle = Math.PI / 180 * -0.1;
+					_controls.update();
+
+					_controls.minPolarAngle = Math.PI / 180 * 0;
+					_controls.maxPolarAngle = Math.PI / 180 * 120;
+					_controls.minAzimuthAngle = -Infinity;
+					_controls.maxAzimuthAngle = Infinity;
+					_controls.addEventListener( 'start', () => textureFactory.setHoverEnabled( false ) );
+					_controls.addEventListener( 'end', () => textureFactory.setHoverEnabled( true ) );
+					
+					
+					textureFactory.getTexture().anisotropy = _renderer.capabilities.getMaxAnisotropy(); 
+					textureFactory.getTexture().magFilter = textureFactory.getTexture().minFilter = THREE.LinearFilter;
+					textureFactory.getTexture().generateMipmaps = false;
+					textureFactory.signals.actionStarted.add( () => _controls.enabled = false );
+					textureFactory.signals.actionFinished.add( () => _controls.enabled = true );
+					textureFactory.signals.uvToScreenRequested.add( ( u, v ) => 
+					{
+						if( _surface ) 
+						{	
+							const uvAttribute = _surface.geometry.attributes.uv;
+								
+							let distance, 
+								minDistance = Infinity,
+								positionIndex = 1;
+							
+							for( let i = 0; i < uvAttribute.count; i++ ) 
+							{
+								distance = getDistance( u, v, uvAttribute.getX( i ), uvAttribute.getY( i ) );
+								
+								if( minDistance > distance )
+								{
+									minDistance = distance;
+									positionIndex = i;
+								}
+							}
+							
+							const positionAttribute = _surface.geometry.attributes.position;
+							const position = new THREE.Vector3( positionAttribute.getX( positionIndex ), positionAttribute.getY( positionIndex ), positionAttribute.getZ( positionIndex ) );	
+							const projectedPosition = position.applyMatrix4( _surface.matrixWorld ).project( _camera );
+							const vr = _renderer.domElement.getBoundingClientRect();
+							const sx = vr.x + ( projectedPosition.x * _width / 2 ) + _width / 2;
+							const sy = vr.y - ( projectedPosition.y * _height / 2 ) + _height / 2;
+
+							textureFactory.setRequestedCoords( sx, sy );
+						}
+					} );
+					
+					render();
+					
+					domContainer.addEventListener( 'mousedown', onDocMouseDown, true );
+					window.addEventListener( 'mousemove', onDocMouseMove, false );
+					window.addEventListener( 'mouseup', onDocMouseUp, false );
+					
+					domContainer.appendChild( _renderer.domElement );
+
+					return {
+						freeze,
+						screenToUV,
+					}
+				};
+
+				const TextureFactory = ( { domContainer, fontList, snaplineList } ) =>
+				{
+					const SIZE = 2048;
+					const HANDLE_SIZE = 48;
+					const HANDLE_ROTATE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAtJJREFUeNrUWk1W2zAQltPucV/Z2zz2DZQDxIWu8x6wLyk3gBMUOEALXdMAF4AbNJwgMRdIcoIkJzD5DAYhS7Ilj0I8783Gia3v0/xoZmzGXqUz1/5ckyXX/jPWN9KtAXBRu/zOJzXV1BIvbhNFUTIcDpNlFWADRsGdXhm5AH/y6yQZ9AekJHjMDT4QwjBkLmRn+zuLBzHJs0SMDbYAmU6npCQWQuC+d5/qeDx2TuLFn6rI3e1dcvjzMFlfW08+eB+Vit8nk0mltYRMZE8AQBCknz+takGL+nVzqxIJEgK9/73C3dbpn9/n70fg+OjYGjgUrvZuLoTFy7gI/gf3Eq101b2ufBZYE9DtPIDCLUTf3v62QwremgCyjAo8iKmCMiNABd6KAMDJMg2uFQEDAUrwVgRUrgOrFNcuI/L6yogAdl8GHgHqUnTPNyKAwJQFrCvBhiGL6SxsRIDPItTZRAded14YEZAFrivhwessrewHZBWlKK2o5azsns0rVl5GozF9Od1sfnFGoLmxkbtWVH5rCQwkNwdB6I6AZHOmglWMCMxm+Zt9f4Utk2gJtFp5f4/j2BmYrHtz2lLaLFJWZC5bJmko06jsFHZ1iJmsVTqN+r4/zwzNXGqTpdeqcn11UyorGbtQJDHh6ekZOYG/Fxe5a+12u/pUAtWkbSVqUriZnPjG5bSsjcQCFCNDVaNEVo3qrFCVBCYbqkZJN3axaillZs4Ws3EnWZle1j2tm/q93X3loii7saNFglJcN09C92fSkXkZC/bEoPKQNgyD9PAJgiA9yXEPTu84fkjTr662Oej8YJf/Lguzjud59rNR+KbOEosYdpGMFlUxYao2MUQ23EV2KjOp0+26zZCXjABPBMEntoSqsaNsgmdLwCiIy76NQZBnwcuX5VTtKB/E5AQWITyBBqu5NN6WyqOlByzDWPsX3bX/1KD2H3vU+nObRwEGAJLv5YOtgiqoAAAAAElFTkSuQmCC';
+					const HANDLE_DELETE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAjlJREFUeNrsWoGNwjAMTNEPABswAhsAG8AGZYMyAWICRqiYADYoGxQmgBG6QT8XkWKi55+kTkn0tRRRUhR8sR2f3QrxkFSOUo468FHedX2SPALFzZHTna8jHcoSjdvMZrP6er3WoQp0g46GOz0Qhaw8BUF1Tu4XSuR9EYMkSdJcD0Tk8uVj0fP5LKqqepqbTCZiOBx6AdH4U1s5HA61VPLlqZFlGUscGOvyADCD69XYbDasANhi4Hg8qk+4ibSEKIriaSwWC3V/v9+HGQPa5+HrWlkqp9NJgbzdbp+LAfiwz8w6Ho/rsiz9xECe553QA2RaGwBvu5A2PVxkt9uxuwFcbLvdqk+vMYAglbvk5TwHAFv5f5kYJqZc5NMysHGdLsT2f6zYKHZ/Pp+rawQyAppDlsulyiNpmgqZqYU8Tt9mo9ZUQv8WvIdLbNdsRSW0icE4qWVGo5FYr9e/zuEoxhx2nMtNrQH85DZQFi5ggjLnAABzmjd1GsShyscBmIVPdACoi/11+rACuFwu7GA6ATCdTllM3wdxD4CxDmjDtZwBcNe2rrzKORP7KM47AdAVre6D2GdhQu+1TYitGltIZlAmyzL1nTa0UJzgPm0AIH5QsNCA1QlRJ0ivjS2zB1oURetiRoKx7pk69YUoX8GuY+dWq5UTf6G7r8lcm3Wsu9PcXTpYwbU77fyICRnUtov2yqKIF6tOBCnq+2dkQeWBUOiBLQeL/kF3KiJ/1QAS9cseTfYXEb5u8y3AAODTUeBi9yhEAAAAAElFTkSuQmCC';
+					const HANDLE_SCALE_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAb9JREFUeNrsmo2xRDAQx9ebV4ASlKAEOqADnaADHShFCXRAB3TgZTPH5ZzLSC5i88bO7Iw5w/3+sh9JAHhaxrxlPhP39sH6YrUD4FuvxSc/O+p8JNawiaJo7vt+pmrIhoybcHoqogwvihCZvccBN3YeXDDP89bjH3Dcfm3+2TRNUFWV0jVJkkAYhjQEdF0HZVkqXycTcIeQigVBAKwMfgwvHCHyApqm2YWP41jrnpeH0AKv8/QvF7AH7/s+HynyAj7BY4iRFyCDl5VMEgJMwlsXYBreqoAz4K0JOAt+nUUvfpbVdf0yh2fwc9u20jk/E8d9HMe385tV2fkCEII96UPwR8y6gEVEnudGVn33ioySGRUwDAMURcGrjk0zkgOYmJigeB9M2L3qYcoOJzFCLOVMlnwi/OJYOi8XgFVD3PQ6Cm9zBL7KAeys2GHFmMfOih0WOy3pJKYAry2ACryWAErwygKowSsJwCZFDV5pXwgFbLf7robXTmIq8F/tzKVpuvs768BK2yKXCJDtomGo2RTwv3en8eWCTn5YXdzcKzJKK7Jtradoe4zOv+jOwPFPDXj/AYc/9lgsAwc/t/kTYACWIYc9GL1xNwAAAABJRU5ErkJggg==';
+					const HANDLE_LOCK_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAfRJREFUeNrsmg2tgzAQx8vLE4AEJEwCOEACEnAADpCABHCABHAADsABjyODdQ3r+sW1Td4ll2xZtv1/7fXu2kLIy7LN+81Xx71/an2z2gPhrNf0yK+e+j4TZ9jEcbyO47i6aqANNDLh9CJyWTwNQWsOni922z4nPlgQBOfrH+K5WQFo25aUZUmWZTHye2c8Ydg8z2sYhvv/PR6P/b2sMZkIF6DrujcBKhD0962vgWEYSJIkyuGEDjBNk3EItBCq65pbWUXDycoayLJMqD0QgUAFADFpmkr1ON8g0ABABIhRadR4ECgAfd+f+V7VP0HcDtA0jbb4w6uqug8AhBZFsTuMuEimcWIGPsV2FEVagmHWoF2Gan0MyC1rwOQo0+J5olFmQMdhUFCbOZMQVwsVpZCZgIAKbbWd1oGADbqKGa8DKhCqm5nbChm90xJNl6p2C4BotymTLtEARMWDQ2eqa0YBWPEwwlBJeWtC9wDNGMCV+CM8eAsbAK0D8MR/y07WAUTE8yCshpCM+CuIPM/tLWJWPLTPMilRN31qAbAttE4lRQcwcRxoDQAWHN0iQBjZFC8FwGYQ2Pu6YMIAsNE4Mo3MjgkT4Jd3aLqFy37guvUvZJsJN6+b/u/IXLojuzq7d82uNHp/0e39owbeP+zh9eM2fwIMAJ6phuLoiz9hAAAAAElFTkSuQmCC';
+					const HANDLE_UNLOCK_URL = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAflJREFUeNrsmgsNwjAQhm8oQAISkAAOkDAc4AAcIGE4AAdIGA7AATgo/YGx0mxdX+sjocklQML2f9fr3XUdUTtKbjU3lrjVH60/o8pAuGyV6HmWqb1m4hs2iwWx65UYY2katEGjFE7tDymLFyFEzcXnw2swRlmMohA+5w4wiSHgdCLa7YgeDz/X+8ZTiBi+34lNp+/7zefv76bXkDJRWIDz+VeADYT4/0nseL5ciJZL+3AKDnC7+YcIFkJVpa6suuEUZQ2UpV57oAMRFABiViuzHmcIIhgARECMTaOmgggCUNdtvre1PojRAY5Hd/GN7fdqAKdeCC0BUiAGj3PiHqPDgWi99pNycT1e+Ig7o7cXspqBvtiezdy8jVlDu4xqjRAcbREP5XNb8SrRXgFcskufwSlBmzmfEF0LNUgh8wGBCh21nXaBwAbd5p7e64ANhO1mZrRCJu60dNOl7b1GAdDtNk3SZTAAXfEwdKaurYpXAFk8PIxKqloTrg/QvAF0iW/CQ7WwARgdQCV+KDtFB9ARr4KIGkIm4rsgNpuIi1gWj/bZJCW6pk8nALmFdqmkwQF8PA6MBoAFJ7YICKOY4o0A5Ayy3aZxSqMNgI1Gk2lMdkxJzQC87it7jAHwPyNL6oys69l9aqNLY/YH3dm/apD9yx5Zv27zFGAAZIChiMv8vE0AAAAASUVORK5CYII=';
+					
+					let _ttime;
+
+					let _placementPointSelectionMode = false;
+					let _hoverEnabled = true;
+
+					let _requestedX = 0;
+					let _requestedY = 0;
+
+					let _pointerX = 0;
+					let _pointerY = 0;
+					let _pointerDownX = 0;
+					let _pointerDownY = 0;
+					let _pointerIsDown = false;
+					let _pointerIsOnSurface = false;
+					
+					let _hoverElement;				
+					let _selectedElement;
+					
+					let _action,
+						_actionMatrix,
+						_actionPivotX = 0,
+						_actionPivotY = 0,
+						_actionAngle = 0,
+						_actionDistance = 0,
+						_screenX = 0,
+						_screenY = 0,
+						_screenPivotX = 0,
+						_screenPivotY = 0;
+
+					
+					let _rotateHandle, _rotateHandle2,
+						_scaleHandle, _scaleHandle2,
+						_deleteHandle,
+						_lockHandle, _unlockHandle;
+
+
+					const _signals =
+					{
+						maskLoaded:new signals.Signal(),
+						maskUnloaded:new signals.Signal(),
+						templateLoaded:new signals.Signal(),
+						templateUnloaded:new signals.Signal(),
+						elementAdded:new signals.Signal(),
+						elementRemoved:new signals.Signal(),
+						elementSelected:new signals.Signal(),
+						elementDeselected:new signals.Signal(),
+						elementLocked:new signals.Signal(),
+						elementUnlocked:new signals.Signal(),
+						elementAttributesChanged:new signals.Signal(),
+						actionStarted:new signals.Signal(),
+						actionFinished:new signals.Signal(),
+						uvToScreenRequested:new signals.Signal(),	
+						ttime:new signals.Signal(),
+					};
+					
+					const _textureCanvas = document.createElement( 'canvas' );
+						  _textureCanvas.width = _textureCanvas.height = SIZE;
+						  _textureCanvas.addEventListener( 'contextlost', () => console.warn( 'TEXTURE_CANVAS_CONTEXT_LOST' ) );
+					
+					const _textureContext = _textureCanvas.getContext( '2d' );
+						  _textureContext.imageSmoothingEnabled = true;
+						  _textureContext.imageSmoothingQuality = 'high';
+						  _textureContext.lineCap = 'butt';
+						  _textureContext.miterLimit = 2;
+						
+					const _textureContextPatterns = [];
+					
+					const _texture = new THREE.CanvasTexture( _textureCanvas );
+						  _texture.flipY = false;
+	  
+					const _paper = Snap( SIZE, SIZE );
+						  _paper.clear();
+						  _paper.attr( { 'xmlns:xlink':'http://www.w3.org/1999/xlink' } );
+						  
+	  
+					const _background = _paper.rect( 0, 0, SIZE, SIZE ).attr( { fill:'white', id:'background' } );
+					const _design = _paper.g().attr( { id:'design' } );
+					const _mask = _paper.g().attr( { id:'mask' } );
+						  // _mask.data().bbox = { x:0, y:0, width:SIZE, height:SIZE };
+						  _mask.path( 'M 0 0, L ' + SIZE + ' 0, L ' + SIZE + ' ' + SIZE + ', L 0 ' + SIZE + ', L 0 0, Z' ).attr( { fill:'white' } );
+
+					const _editor = _paper.g().attr( { id:'editor', mask:_mask } );
+					const _objects = _editor.g().attr( { id:'objects' } );
+					const _hoverBounds = _editor.g().attr( { id:'hover-bounds' } );
+					const _snaplines = _editor.g().attr( { id:'snaplines' } );
+					const _selectedBounds = _editor.g().attr( { id:'selected-bounds' } );
+					const _handles = _editor.g().attr( { id:'handles' } );
+					
+					snaplineList.forEach( snapline => 
+					{
+						_snaplines.line( snapline.x1, snapline.y1, snapline.x2, snapline.y2 ).attr( { stroke:'white', strokeWidth:2, opacity:0 } ); 
+					} );
+					
+					const setRequestedCoords = ( x, y ) => 
+					{
+						_requestedX = x;
+						_requestedY = y; 
+					};
+					
+					const getDistance = ( x1, y1, x2, y2 ) => 
+					{
+						const a = x1 - x2;
+						const b = y1 - y2;
+
+						return Math.sqrt( a * a + b * b );
+					};
+					
+					const hitTestPoint = ( element, bbox, x, y ) => 
+					{
+						if( element.data().bitmapCache )
+						{
+							// У маски нет, на данный момент, bbox
+							if( bbox != null )
+							{
+								x = Math.floor( x - bbox.x );
+								y = Math.floor( y - bbox.y );
+							}
+
+							return element.data().bitmapCacheContext.getImageData( x, y, 1, 1 ).data[ 3 ] > 0;
+						}
+						else 
+							return false;
+					};
+					
+					const getElementFromPoint = ( x, y, hitTest ) => 
+					{
+						const objects = _objects.selectAll( '*' );
+						
+						let element;
+						let bbox;
+						
+						for( let i = objects.items.length - 1; i >= 0; i-- )
+						{
+							element = objects.items[ i ];
+							bbox = element.getBBox();
+							
+							if( !hitTest && Snap.path.isPointInsideBBox( bbox, x, y ) ) 
+								return element;
+
+							if( hitTest && hitTestPoint( element, bbox, x, y ) )
+								return element;
+						}
+						
+						return null;
+					};
+					
+					const getHandleFromPoint = ( x, y ) => 
+					{
+						const handles = _handles.selectAll( '*' );
+						
+						let handle;
+						let bbox;
+						
+						for( let i = handles.items.length - 1; i >= 0; i-- )
+						{
+							handle = handles.items[ i ];
+							
+							if( handle.attr( 'visibility' ) == 'hidden' )
+								continue;
+								
+							bbox = handle.getBBox();
+							
+							if( Snap.path.isPointInsideBBox( bbox, x, y ) ) 
+								return handle;
+						}
+						
+						return null;
+					};
+					
+					const freeze = ( value ) => 
+					{
+						_placementPointSelectionMode = value;
+						
+						if( _placementPointSelectionMode )
+						{
+							if( removeSelection() )
+								updatePaperImage();
+						}
+					};
+					
+					const setPointerDown = ( value ) => 
+					{
+						if( _placementPointSelectionMode ) return;
+						
+						let needsUpdate;
+
+						const lastAction = _action;
+						const lastSelectedElement = _selectedElement;
+						
+						_action = null;
+						_pointerIsDown = value;
+
+						// mousedown
+						if( _pointerIsDown )
+						{
+							_pointerDownX = _pointerX;
+							_pointerDownY = _pointerY;
+							
+							if( _selectedElement )
+							{
+								const hoverHandle = getHandleFromPoint( _pointerDownX, _pointerDownY );
+
+								if( hoverHandle ) 
+								{
+									_action = hoverHandle.data().action;
+									
+									if( _selectedElement.data().locked && _action != 'unlock' )
+										_action = null;
+
+									if( _action != null )
+									{
+										_actionMatrix = _selectedElement.transform().localMatrix;
+										_actionPivotX = _selectedElement.getBBox().cx;
+										_actionPivotY = _selectedElement.getBBox().cy;
+
+										_signals.uvToScreenRequested.dispatch( _actionPivotX / SIZE, _actionPivotY / SIZE );
+										// Должен быть вызван setRequestedCoords, иначе не будет работать корректно
+										
+										_screenPivotX = _requestedX;
+										_screenPivotY = _requestedY;
+										
+										if( _action == 'rotate' )
+											_actionAngle = Math.atan2( _screenX - _screenPivotX, _screenY - _screenPivotY ) / Math.PI * 180;
+										
+										if( _action == 'scale' )
+											_actionDistance = getDistance( _screenX, _screenY, _screenPivotX, _screenPivotY );
+									}
+								}									
+							}
+							
+							const topBBoxElement = getElementFromPoint( _pointerDownX, _pointerDownY, false );
+							const topPixelElement = getElementFromPoint( _pointerDownX, _pointerDownY, true );
+						
+							if(  _action == null && _selectedElement && 
+								!_selectedElement.data().locked &&
+								( ( topPixelElement == _selectedElement ) || 
+								  ( topPixelElement == null && topBBoxElement == _selectedElement ) ) )
+							{
+								_actionMatrix = _selectedElement.transform().localMatrix;
+								_action = 'drag';
+								
+								// console.log( 're-drag-start' );
+							}
+
+							if( _action == null && ( _selectedElement != topPixelElement || _selectedElement == null ) )
+							{						
+								if( topPixelElement || topBBoxElement )
+								{	
+									selectElement( ( topPixelElement || topBBoxElement ).data().uuid );									
+									
+									// console.log( 'select' );
+									
+									if( !_selectedElement.data().locked )
+									{
+										_actionMatrix = _selectedElement.transform().localMatrix;
+										_action = 'drag';
+										
+										_objects.add( _selectedElement );
+									}
+									
+									// console.log( 'drag-start' );
+									
+									needsUpdate = true;
+								}
+								else if( !_pointerIsOnSurface ) // not on surface
+								{
+									// console.log( 'mousedown deselect' );
+									if( removeSelection() )
+										needsUpdate = true;
+								}
+							}
+						}
+						
+						
+						
+						
+						// mouseup
+						if( !_pointerIsDown )
+						{
+							_snaplines.selectAll( 'line' ).forEach( element => 
+							{
+								if( parseFloat( element.attr( 'opacity' ) ) > 0 ) 
+								{
+									element.attr( { opacity:0 } );
+									needsUpdate = true;
+								}	
+							} );
+							
+							if( _selectedElement && _pointerDownX > 0 && _pointerX > 0 && _pointerDownX == _pointerX && _pointerDownY == _pointerY )
+							{
+								if( !Snap.path.isPointInsideBBox( _selectedElement.getBBox(), _pointerX, _pointerY ) && getHandleFromPoint( _pointerX, _pointerY ) == null )
+								{
+									// mouseup deselect ???
+									if( removeSelection() )
+										needsUpdate = true;
+								}
+
+								if( lastAction == 'delete' )
+								{
+									removeElement( lastSelectedElement.data().uuid );
+									needsUpdate = true;
+								};
+								
+								if( lastAction == 'lock' )
+								{
+									lockElement( lastSelectedElement.data().uuid );	
+									needsUpdate = true;
+								}
+								
+								if( lastAction == 'unlock' )
+								{
+									unlockElement( lastSelectedElement.data().uuid );
+									needsUpdate = true;
+								}
+								
+							}
+						}
+						
+						
+						
+						if( needsUpdate )
+							updatePaperImage();
+							
+						if( lastSelectedElement && ( lastAction == 'rotate' || lastAction == 'scale' ) )
+							updateElementImage( lastSelectedElement ); 
+							
+						// console.log( 'action:', _action );
+						
+						if( _pointerIsDown && _action != null ) 
+							_signals.actionStarted.dispatch();
+						else 
+							_signals.actionFinished.dispatch();
+					};
+					
+					const setPointer = ( screenX, screenY, u, v, isPointOnSurface ) => 
+					{
+						_screenX = screenX;
+						_screenY = screenY;
+						_pointerX = u * SIZE;
+						_pointerY = v * SIZE;
+						_pointerIsOnSurface = isPointOnSurface;
+						
+						if( !_hoverEnabled || _placementPointSelectionMode ) return;
+						
+						const topBBoxElement = getElementFromPoint( _pointerX, _pointerY, false );
+						const topPixelElement = getElementFromPoint( _pointerX, _pointerY, true );
+						const hoverElement = topPixelElement || topBBoxElement;
+						
+						let needsUpdate;
+						
+						if( hoverElement )
+						{
+							if( hoverElement != _hoverElement )
+							{
+								_hoverElement = hoverElement;
+								
+								if( !_selectedElement )
+								{
+									drawHoverBounds( _hoverElement );									
+									needsUpdate = true;
+								}
+							}
+						}
+						else if( _hoverElement != null )
+						{
+							_hoverElement = null;
+							
+							clearHoverBounds();							
+							needsUpdate = true;
+						}
+						
+
+						if( _action == 'drag' && _pointerIsOnSurface )
+						{	
+							const tx = _pointerX - _pointerDownX;
+							const ty = _pointerY - _pointerDownY;
+							
+							_selectedElement.transform( new Snap.Matrix().translate( tx, ty ).add( _actionMatrix ) ); 
+							
+							const bbox = _selectedElement.getBBox();
+							
+							_snaplines.selectAll( 'line' ).forEach( element => 
+							{
+								const x1 = parseFloat( element.attr( 'x1' ) );
+								const y1 = parseFloat( element.attr( 'y1' ) );
+								const y2 = parseFloat( element.attr( 'y2' ) );
+								const dx = bbox.cx - x1;
+								
+								if( bbox.cy > y1 && bbox.cy < y2 && Math.abs( dx ) < 10 )
+								{
+									_selectedElement.transform( new Snap.Matrix().translate( tx - dx, ty ).add( _actionMatrix ) );
+									element.attr( { opacity:1.0 } );
+								}
+								else 
+								{
+									element.attr( { opacity:0.0 } );
+								}
+							} );
+														
+
+							drawSelectedBounds( _selectedElement );									
+							updateHandles( _selectedElement );
+
+							needsUpdate = true;
+						}
+						
+						if( _action == 'rotate' )
+						{	
+							_selectedElement.transform
+							(
+								new Snap.Matrix()
+									.rotate( _actionAngle - ( Math.atan2( _screenX - _screenPivotX, _screenY - _screenPivotY ) / Math.PI * 180 ), _actionPivotX, _actionPivotY )
+									.add( _actionMatrix )
+							); 
+							
+							drawSelectedBounds( _selectedElement );
+							updateHandles( _selectedElement );
+
+							needsUpdate = true;
+						}
+						
+						if( _action == 'scale' )
+						{
+							const scale = getDistance( _screenX, _screenY, _screenPivotX, _screenPivotY ) / _actionDistance;
+
+							_selectedElement.transform
+							( 
+								new Snap.Matrix()
+									.scale( scale, scale, _actionPivotX, _actionPivotY )
+									.add( _actionMatrix )
+							);
+							
+							drawSelectedBounds( _selectedElement );
+							updateHandles( _selectedElement );
+
+							needsUpdate = true;
+						}
+													
+						if( needsUpdate )
+							updatePaperImage();
+					};
+					
+					const updateElementImage = ( element ) => 
+					{
+						// переписано под canvas
+						if( element.type == 'text' || element.type == 'image' )
+						{
+							if( element.data().bitmapCache == null ) 
+							{
+								element.data().bitmapCache = document.createElement( 'canvas' );
+								element.data().bitmapCacheContext = element.data().bitmapCache.getContext( '2d', { willReadFrequently:true } );
+							}
+								
+							const bbox = element.getBBox();
+							const canvas = element.data().bitmapCache;
+							const context = element.data().bitmapCacheContext;
+							const matrix = element.transform().globalMatrix;
+							
+							canvas.width = bbox.width;
+							canvas.height = bbox.height;
+								  
+							context.clearRect( 0, 0, bbox.width, bbox.height );
+							context.translate( -bbox.x, -bbox.y );
+							context.transform( matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f );
+							
+							if( element.type == 'text' )
+							{
+								context.textAlign = 'center';
+								context.textBaseline = 'alphabetic';
+								context.fillStyle = element.attr( 'fill' );
+								context.font = element.attr( 'fontSize' ) + ' ' + element.attr( 'fontFamily' );
+								context.fillText( element.node.textContent, parseFloat( element.attr( 'x' ) ), parseFloat( element.attr( 'y' ) ) );
+							}
+							else if( element.type == 'image' )
+							{
+								context.drawImage
+								( 
+									element.node, 
+									parseFloat( element.attr( 'x' ) ), 
+									parseFloat( element.attr( 'y' ) ),
+									parseFloat( element.attr( 'width' ) ), 
+									parseFloat( element.attr( 'height' ) ) 
+								);
+							}
+							
+							/*// BEGIN_TEMP
+							if( canvas.parentElement == null ) 
+								domContainer.appendChild( canvas );
+							// END_TEMP */
+						}
+					};
+					
+					const updateMaskImage = () => 
+					{
+						if( _mask.data().bitmapCache == null ) 
+						{
+							_mask.data().bitmapCache = document.createElement( 'canvas' );
+							_mask.data().bitmapCache.width = SIZE;
+							_mask.data().bitmapCache.height = SIZE;
+							
+							_mask.data().bitmapCacheContext = _mask.data().bitmapCache.getContext( '2d', { willReadFrequently:true } );
+							_mask.data().bitmapCacheContext.fillStyle = 'black';
+						}
+
+						_mask.data().bitmapCacheContext.clearRect( 0, 0, SIZE, SIZE );
+						
+						// TODO: отдельные пути и узлы для рендера
+						_mask.selectAll( 'path' ).forEach( element => _mask.data().bitmapCacheContext.fill( new Path2D( element.attr( 'd' ) ) ) );
+						
+						/* // BEGIN_TEMP
+						if( _mask.data().bitmapCache.parentElement == null ) 
+							domContainer.appendChild( _mask.data().bitmapCache );
+						// END_TEMP */
+					};
+					
+					const getMaskURL = ( element ) =>
+					{
+						if( element.attr( 'mask' ) != 'none' ) 
+							return element.attr( 'mask' );
+						else if( element.parent() && element.parent() != _paper )
+							return getMaskURL( element.parent() );
+						else 
+							return 'none';
+					};
+
+					const updatePaperImage = () => 
+					{
+						_ttime = new Date().getTime();
+	
+						_textureContext.fillStyle = 'white';
+						_textureContext.fillRect( 0, 0, SIZE, SIZE );
+						
+						
+						let maskURL, maskElement, maskPathElement, maskPath,
+							matrix, dashArray;
+							
+						const types = [ 'path', 'rect', 'text', 'image', 'line' ];
+							
+						_paper.selectAll( '*' ).forEach( element => 
+						{
+							if( types.indexOf( element.type ) == -1 ) return;
+							if( element.attr( 'visibility' ) != 'visible' ) return;
+
+							maskURL = getMaskURL( element );
+							maskElement = null;
+							maskPathElement = null;
+							
+							if( maskURL != 'none' )
+								maskElement = _paper.select( ( /url\(\"(.*)\"\)/gim ).exec( maskURL )[ 1 ] );
+
+							if( maskElement != null )
+							{
+								maskPathElement = maskElement.select( 'path' );
+								
+								if( maskPathElement )
+								{
+									_textureContext.save();
+									_textureContext.clip( new Path2D( maskPathElement.attr( 'd' ) ) );
+								}
+							}
+							
+							
+							matrix = element.transform().globalMatrix;
+							
+							_textureContext.transform( matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f );
+
+							if( element.type == 'path' )
+							{
+								const fill = element.attr( 'fill' );
+								
+								if( fill.toString().indexOf( 'pattern' ) != -1 )
+									_textureContext.fillStyle = _textureContextPatterns[ fill.attr( 'id' ) ];	
+								else 
+									_textureContext.fillStyle = fill;
+									
+								_textureContext.fill( new Path2D( element.attr( 'd' ) ) );
+							}
+							else if( element.type == 'rect' )
+							{
+								if( element.attr( 'fill' ) != 'none' )
+								{
+									_textureContext.fillStyle = element.attr( 'fill' );
+									_textureContext.fillRect
+									( 
+										parseFloat( element.attr( 'x' ) ), 
+										parseFloat( element.attr( 'y' ) ), 
+										parseFloat( element.attr( 'width' ) ), 
+										parseFloat( element.attr( 'height' ) ) 
+									);
+								}
+								
+								if( element.attr( 'stroke' ) != 'none' )
+								{
+									if( element.attr( 'strokeDasharray' ) == 'none' )
+									{
+										_textureContext.setLineDash( [] );
+									}
+									else
+									{
+										dashArray = element.attr( 'strokeDasharray' ).split( ' ' );
+										dashArray.forEach( ( value, index, array ) => array[ index ] = parseInt( value ) );
+										
+										_textureContext.setLineDash( dashArray );
+									}
+										
+									
+									_textureContext.strokeStyle = element.attr( 'stroke' );
+									_textureContext.lineWidth = parseInt( element.attr( 'strokeWidth' ) );
+									_textureContext.strokeRect( parseFloat( element.attr( 'x' ) ), parseFloat( element.attr( 'y' ) ), parseFloat( element.attr( 'width' ) ), parseFloat( 
+									
+									element.attr( 'height' ) ) );
+								}
+							}
+							else if( element.type == 'text' )
+							{
+								_textureContext.textAlign = 'center';
+								_textureContext.textBaseline = 'alphabetic';
+								_textureContext.fillStyle = element.attr( 'fill' );
+								_textureContext.font = element.attr( 'fontSize' ) + ' ' + element.attr( 'fontFamily' );
+
+								if( element.attr( 'stroke' ) != 'none' )
+								{
+									_textureContext.setLineDash( [] );
+									_textureContext.strokeStyle = element.attr( 'stroke' );
+									_textureContext.lineWidth = parseInt( element.attr( 'strokeWidth' ) );
+									_textureContext.strokeText( element.node.textContent, parseFloat( element.attr( 'x' ) ), parseFloat( element.attr( 'y' ) ) );
+								}
+								
+								// Заливка поверх обводки. В SVG не так!
+								_textureContext.strokeStyle = 'none';
+								_textureContext.fillText( element.node.textContent, parseFloat( element.attr( 'x' ) ), parseFloat( element.attr( 'y' ) ) );
+							}
+							else if( element.type == 'image' )
+							{
+								_textureContext.drawImage
+								( 
+									element.node, 
+									parseFloat( element.attr( 'x' ) ), 
+									parseFloat( element.attr( 'y' ) ), 
+									parseFloat( element.attr( 'width' ) ), 
+									parseFloat( element.attr( 'height' ) ) 
+								);
+							}
+							else if( element.type == 'line' )
+							{
+								_textureContext.globalAlpha = parseFloat( element.attr( 'opacity' ) );
+								_textureContext.strokeStyle = element.attr( 'stroke' );
+								_textureContext.lineWidth = parseInt( element.attr( 'strokeWidth' ) );
+								_textureContext.beginPath();
+								_textureContext.moveTo( parseFloat( element.attr( 'x1' ) ), parseFloat( element.attr( 'y1' ) ) );
+								_textureContext.lineTo( parseFloat( element.attr( 'x2' ) ), parseFloat( element.attr( 'y2' ) ) );
+								_textureContext.stroke();
+								
+								_textureContext.globalAlpha = 1.0;
+							}
+							
+							if( maskPathElement != null ) 
+								_textureContext.restore();
+							
+							_textureContext.resetTransform();
+
+						} );
+
+						_texture.needsUpdate = true;
+						
+						_signals.ttime.dispatch( new Date().getTime() - _ttime );	
+
+						//console.log( 'updatePaperImage' );
+					};
+
+					const getTexture = () => _texture;	
+					const getHoverEnabled = () => _hoverEnabled;
+					const setHoverEnabled = ( value ) => _hoverEnabled = value;
+					
+					const clearSelectedBounds = () => _selectedBounds.clear();
+					
+					const drawSelectedBounds = ( element ) => 
+					{
+						const bbox = element.getBBox();
+						
+						_selectedBounds.clear();
+						_selectedBounds.rect( bbox.x, bbox.y, bbox.width, bbox.height ).attr
+						( {
+							stroke:'black',
+							strokeWidth:1,
+							fill:'none',
+						} );
+					};
+					
+					const clearHoverBounds = () => _hoverBounds.clear();
+					
+					const drawHoverBounds = ( element ) => 
+					{
+						const bbox = element.getBBox();
+									
+						_hoverBounds.clear();
+						_hoverBounds.rect( bbox.x, bbox.y, bbox.width, bbox.height ).attr
+						( {
+							stroke:'#000',
+							strokeWidth:1,
+							strokeDasharray:'24 8',
+							fill:'none',
+						} ); 
+					};
+					
+					const addHandles = ( element ) => 
+					{
+						const bbox = element.getBBox();
+						
+						_rotateHandle = _handles.image( HANDLE_ROTATE_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_rotateHandle.data().action = 'rotate'; 
+						
+						_rotateHandle2 = _handles.image( HANDLE_ROTATE_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_rotateHandle2.data().action = 'rotate'; 
+						
+						_scaleHandle = _handles.image( HANDLE_SCALE_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_scaleHandle.data().action = 'scale';
+						
+						_scaleHandle2 = _handles.image( HANDLE_SCALE_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_scaleHandle2.data().action = 'scale';
+						
+						_deleteHandle = _handles.image( HANDLE_DELETE_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_deleteHandle.data().action = 'delete';
+						
+						_lockHandle = _handles.image( HANDLE_LOCK_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_lockHandle.data().action = 'lock';
+						
+						_unlockHandle = _handles.image( HANDLE_UNLOCK_URL, 0, 0, HANDLE_SIZE, HANDLE_SIZE );
+						_unlockHandle.data().action = 'unlock';
+						
+						updateHandles( element );
+					};
+					
+					const updateHandles = ( element ) => 
+					{
+						const bbox = element.getBBox();
+						const locked = element.data().locked;
+						
+						if( _rotateHandle )
+						{
+							_rotateHandle.attr
+							( {
+								x:bbox.x + bbox.width, 
+								y:bbox.y - HANDLE_SIZE,
+								visibility:locked ? 'hidden' : 'visible',
+							} );
+						}
+						
+						if( _rotateHandle2 )
+						{
+							_rotateHandle2.attr
+							( {
+								x:bbox.x - HANDLE_SIZE, 
+								y:bbox.y + bbox.height,
+								visibility:locked ? 'hidden' : 'visible',
+							} );
+						}
+						
+						if( _scaleHandle )
+						{
+							_scaleHandle.attr
+							( {
+								x:bbox.x + bbox.width, 
+								y:bbox.y + bbox.height,
+								visibility:locked ? 'hidden' : 'visible',
+							} );
+						}
+						
+						if( _scaleHandle2 )
+						{
+							_scaleHandle2.attr
+							( {
+								x:bbox.x - HANDLE_SIZE, 
+								y:bbox.y - HANDLE_SIZE,
+								visibility:locked ? 'hidden' : 'visible',
+							} );
+						}
+						
+						if( _deleteHandle )
+						{
+							_deleteHandle.attr
+							( {
+								x:bbox.x + bbox.width / 2 - HANDLE_SIZE / 2, 
+								y:bbox.y + bbox.height,
+								visibility:locked ? 'hidden' : 'visible',
+							} );
+						}
+						
+						if( _lockHandle )
+						{
+							_lockHandle.attr
+							( {
+								x:bbox.x + bbox.width / 2 - HANDLE_SIZE / 2, 
+								y:bbox.y - HANDLE_SIZE,
+								visibility:locked ? 'hidden' : 'visible',
+							} );
+						}
+						
+						if( _unlockHandle )
+						{
+							_unlockHandle.attr
+							( {
+								x:bbox.x + bbox.width / 2 - HANDLE_SIZE / 2, 
+								y:bbox.y - HANDLE_SIZE,
+								visibility:locked ? 'visible' : 'hidden',
+							} );
+						}
+					};
+					
+					const removeHandles = () => 
+					{
+						_handles.clear();
+						
+						_rotateHandle = 
+						_rotateHandle2 = 
+						_scaleHandle = 
+						_scaleHandle2 = 
+						_deleteHandle = 
+						_lockHandle = 
+						_unlockHandle = null;
+					};
+					
+					const getElementByUUID = ( uuid ) => 
+					{
+						return _objects.selectAll( '*' ).items.filter( element => element.data().uuid == uuid )[ 0 ]; 
+					};
+					
+					const getElementAttributes = ( uuid ) => 
+					{
+						const attributes = {};
+						const element = getElementByUUID( uuid );
+						
+						if( element )
+						{
+							attributes.uuid = uuid;
+							attributes.type = element.type;
+							attributes.fill = Snap.getRGB( element.attr( 'fill' ) ).hex;
+							attributes.stroke = Snap.getRGB( element.attr( 'stroke' ) ).hex;
+							attributes.strokeWidth = element.attr( 'strokeWidth' ).replace( /\D/g, '' );
+							
+							if( element.type == 'text' )
+							{
+								attributes.text = element.node.textContent;
+								attributes.fontSize = element.attr( 'fontSize' );
+								attributes.fontFamily = element.attr( 'fontFamily' ).replace( /["]+/g, '' );
+							}
+						}
+					
+						return attributes;
+					};
+					
+					const removeUnsupportedAttributes = ( element, attributes ) =>
+					{
+						const commonAttributes = [ 'fill', 'stroke', 'strokeWidth' ];
+						const textAttributes = [ 'text', 'fontFamily', 'fontSize' ];
+						
+						for( const [ name, value ] of Object.entries( attributes ) ) 
+						{
+							let found = false;
+							
+							if( commonAttributes.indexOf( name ) != -1 )
+								found = true;
+								
+							if( element.type == 'text' && textAttributes.indexOf( name ) != -1 )
+								found = true;
+
+							if( !found ) 
+							{
+								console.warn( 'Attribute \'' + name + '\' deleted' );
+								delete attributes[ name ];
+							}
+						}
+					};
+					
+					const setElementAttributes = ( uuid, attributes ) => 
+					{	
+						const element = getElementByUUID( uuid );
+						
+						if( element )
+						{
+							removeUnsupportedAttributes( element, attributes );
+							
+							// console.log( 'setElementAttributes:', attributes );
+							
+							const attributesCopy = Object.assign( {}, attributes );
+							
+							if( attributesCopy.hasOwnProperty( 'fontFamily' ) )
+							{
+								if( !hasFontFamily( _paper, attributesCopy.fontFamily ) )
+									addFontFamily( _paper, attributesCopy.fontFamily );
+									
+								attributesCopy.fontFamily = '"' + attributesCopy.fontFamily + '"';
+							}
+
+							element.attr( attributesCopy );
+							
+							if( _selectedElement == element )
+							{
+								drawSelectedBounds( _selectedElement );	
+								updateHandles( element );
+							}
+							
+							_signals.elementAttributesChanged.dispatch( uuid, attributes );
+								
+							return true;
+						}
+						
+						return false;
+					};
+					
+					const removeSelection = () => 
+					{
+						const uuid = _selectedElement ? _selectedElement.data().uuid : null;
+						
+						_selectedElement = null;
+						
+						if( uuid )
+						{						
+							clearHoverBounds();
+							clearSelectedBounds();									
+							removeHandles();
+
+							_signals.elementDeselected.dispatch( uuid );
+							
+							return true;
+						}
+						
+						return false;
+					};
+					
+					const selectElement = ( uuid ) => 
+					{
+						const element = getElementByUUID( uuid );
+						
+						if( element )
+						{
+							removeSelection();
+							
+							_selectedElement = element;
+
+							clearHoverBounds();
+							drawSelectedBounds( _selectedElement );
+							addHandles( _selectedElement );
+
+							_signals.elementSelected.dispatch( uuid );
+							
+							return true;
+						}
+						
+						return false;
+					};
+					
+					const lockElement = ( uuid ) => 
+					{
+						const element = getElementByUUID( uuid );
+						
+						if( element )
+						{
+							element.data().locked = true;
+							
+							if( _selectedElement == element )
+							{
+								drawSelectedBounds( _selectedElement );	
+								updateHandles( element );
+							}
+
+							_signals.elementLocked.dispatch( uuid );
+							
+							return true;
+						}
+						
+						return false;
+					};
+					
+					const unlockElement = ( uuid ) => 
+					{
+						const element = getElementByUUID( uuid );
+						
+						if( element )
+						{
+							element.data().locked = false;
+							
+							if( _selectedElement == element )
+							{
+								drawSelectedBounds( _selectedElement );	
+								updateHandles( element );
+							}
+
+							_signals.elementUnlocked.dispatch( uuid );
+							
+							return true;
+						}
+						
+						return false;
+					};
+					
+					const hasFontFamily = ( paper, name ) => 
+					{
+						return paper.select( 'style[data-font="' + name + '"]' ) != null;
+					};
+					
+					const removeFontFamily = ( paper, name ) => 
+					{
+						const element = paper.select( 'style[data-font="' + name + '"]' );
+						
+						if( element )
+							element.remove();
+					};
+					
+					const addFontFamily = ( paper, name ) => 
+					{
+						if( hasFontFamily( paper, name ) ) 
+							return;
+							
+						const data = fontList.filter( data => data.name == name )[ 0 ];
+						
+						if( data == null )
+						{
+							console.warn( 'addFontFamily( ', name, ' )' );
+							return;
+						}
+						
+						const string = '<style data-font="' + name + '" type="text/css">@font-face {font-family: "' + name + '"; src: url("' + data.dataURL + '");}</style>';
+						const element = Snap.parse( string ).select( 'style' );
+						
+						paper.append( element );
+						
+						element.toDefs();
+					};
+	
+					const addText = ( text, x, y, attributes ) => 
+					{
+						if( !hitTestPoint( _mask, null, x, y, true ) )
+						{
+							console.log( 'Masked area' ); 
+							return null;
+						}
+						
+						if( attributes == null ) 
+							attributes = {};
+		
+						attributes.textAnchor = 'middle';
+						attributes.alignmentBaseline = 'centeral';
+	
+						if( attributes.hasOwnProperty( 'fontFamily' ) )
+						{
+							if( !hasFontFamily( _paper, attributes.fontFamily ) )
+								addFontFamily( _paper, attributes.fontFamily );
+								
+							attributes.fontFamily = '"' + attributes.fontFamily + '"';
+						}
+							
+						const uuid = 'T-' + THREE.MathUtils.generateUUID();
+						const element = _objects.text( x, y, text );
+							element.data().uuid = uuid;
+							element.attr( attributes );	
+
+						// TODO: подумать над удалением неиспользуемых шрифтов
+						//console.log( attributes.fontFamily );
+	  
+						updateElementImage( element );
+
+						_signals.elementAdded.dispatch( uuid );
+						
+						selectElement( uuid );
+
+						return uuid;
+					};
+					
+					const addImage = ( url, cx, cy, naturalWidth, naturalHeight ) => 
+					{
+						if( !hitTestPoint( _mask, null, cx, cy, true ) )
+						{
+							console.log( 'Masked area' );
+							return null;
+						}
+						
+						const maxSize = 256;
+						
+						let width = naturalWidth;
+						let height = naturalHeight;
+						
+						if( width > maxSize || height > maxSize )
+						{
+							const scale = Math.max( maxSize / width, maxSize / height );
+							
+							width *= scale;
+							height *= scale;
+						}
+
+						return addImage2( url, cx - width / 2, cy - height / 2, width, height );
+					};
+					
+					const addImage2 = ( url, x, y, width, height ) => 
+					{
+						const uuid = 'I-' + THREE.MathUtils.generateUUID();
+						const element = _objects.image( url, x, y, width, height );
+							element.data().url = url;
+							element.data().uuid = uuid;	
+
+						updateElementImage( element );
+
+						_signals.elementAdded.dispatch( uuid );
+						
+						selectElement( uuid );
+
+						return uuid;
+					};
+
+					const removeElement = ( uuid ) => 
+					{
+						const element = getElementByUUID( uuid );
+						
+						if( element )
+						{
+							if( _selectedElement == element )
+								removeSelection();
+							
+							/* // BEGIN_TEMP
+							if( element.data().bitmapCache )
+							{
+								if( element.data().bitmapCache.parentElement )
+									element.data().bitmapCache.remove();
+							}
+							// END_TEMP */
+							
+							element.data().bitmapCacheContext = null;
+							element.data().bitmapCache = null;
+							element.remove();
+
+							_signals.elementRemoved.dispatch( uuid );
+							
+							return true;
+						}
+						
+						return false;
+					};
+					
+					const loadMask = ( maskURL ) => 
+					{
+						if( _mask.selectAll( '*' ).length > 0 ) // hasMask
+						{
+							if( _mask.data().bitmapCache )
+							{
+								 // BEGIN_TEMP
+								/*if( _mask.data().bitmapCache.parentElement )
+									_mask.data().bitmapCache.remove();
+								// END_TEMP */
+								
+								_mask.data().bitmapCacheContext = null;
+								_mask.data().bitmapCache = null;
+							}
+							
+							_mask.clear();
+							_mask.path( 'M 0 0, L ' + SIZE + ' 0, L ' + SIZE + ' ' + SIZE + ', L 0 ' + SIZE + ', L 0 0, Z' ).attr( { fill:'white' } );
+
+							updatePaperImage();
+							
+							_signals.maskUnloaded.dispatch();
+						}
+						
+						_mask.data().url = null;
+						
+						Snap.load( maskURL, fragment => 
+						{	
+							const path = fragment.select( 'path' );
+
+							_mask.clear();
+							_mask.path( path.attr( 'd' ) );
+							_mask.data().url = maskURL;
+
+							_mask.selectAll( 'path' ).forEach( element => element.attr( { fill:'white' } ) );
+								
+							updateMaskImage();							
+							updatePaperImage();
+							
+							_signals.maskLoaded.dispatch();
+						} );
+					};
+					
+					const setTemplateColor = ( { id, hex, patternData } ) => 
+					{
+						const pathElementList = _design.selectAll( 'path' );
+						const patternElementList = _paper.selectAll( 'pattern' );
+
+						let patternElement;
+						let patternElementID;
+
+						for( let i = 0; i < patternElementList.length; i++ )
+						{
+							if( patternElementList[ i ].data().colorID == id )
+							{
+								// console.log( 'Pattern Found' );
+								patternElement = patternElementList[ i ];
+								break;
+							}
+						}
+						
+						if( patternData )
+						{
+							if( patternElement && ( patternElement.data().updateTime != patternData.updateTime || patternElement.data().patternUUID != patternData.uuid ) )
+							{
+								// console.log( 'Old Pattern Removed' );
+								
+								patternElementID = patternElement.attr( 'id' );
+								
+								_textureContextPatterns[ patternElementID ] = null;
+								delete _textureContextPatterns[ patternElementID ];
+								
+								patternElement.remove();
+								patternElement = null;
+							}
+							
+							if( patternElement == null )
+							{
+								const patternSourceElement = _paper.g();
+								
+								patternData.pathes.forEach( pathData => patternSourceElement.path( pathData.path ).attr( { fill:pathData.hex } ) );
+
+								patternElement = patternSourceElement.pattern( 0, 0, patternData.width, patternData.height );
+								patternElement.attr( { patternTransform:'scale(' + patternData.scale + ' ' + patternData.scale + ')' } );
+								patternElement.data().colorID = id;
+								patternElement.data().patternUUID = patternData.uuid;
+								patternElement.data().updateTime = patternData.updateTime;
+								
+								patternElementID = patternElement.attr( 'id' );
+								
+								_textureContextPatterns[ patternElementID ] = _textureContext.createPattern( patternData.canvas, 'repeat' );
+								
+								// console.log( 'Create New Pattern:' + patternElementID );
+							}
+						}
+						else 
+						{
+							if( patternElement )
+							{
+								patternElementID = patternElement.attr( 'id' );
+								
+								_textureContextPatterns[ patternElementID ] = null;
+								delete _textureContextPatterns[ patternElementID ];
+								
+								patternElement.remove();
+								patternElement = null;
+								
+								// console.log( 'Pattern removed' );
+							}
+						}
+						
+						for( let i = 0; i < pathElementList.length; i++ )
+						{
+							if( pathElementList[ i ].attr( 'id' ) == id )
+							{
+								if( patternElement )
+								{
+									// console.log( 'Fill Pattern' );
+									pathElementList[ i ].attr( { fill:patternElement } );
+								}
+								else 
+								{
+									// console.log( 'Fill Color' );
+									pathElementList[ i ].attr( { fill:hex } );
+								}
+							}
+						}
+						
+						updatePaperImage();
+					};
+					
+					const loadTemplate = ( templateURL ) => 
+					{
+						if( _design.data().url )
+						{
+							_design.clear();
+
+							updatePaperImage();
+
+							_signals.templateUnloaded.dispatch();	
+						}
+
+						_design.data().url = null;
+
+						Snap.load( templateURL, ( fragment ) => 
+						{
+							_design.g().append( fragment );
+							_design.data().url = templateURL;
+							
+							updatePaperImage();
+							
+							_signals.templateLoaded.dispatch( templateURL );
+						} );						
+					};
+
+					 // SVG must be added to DOM and be visible
+					domContainer.appendChild( _paper.node );
+					//domContainer.appendChild( _textureCanvas ); // TEST
+					
+					// bitmapCache
+					updateMaskImage();
+
+					// =====================================================
+
+					return {
+						signals:_signals,
+						toSVGString:() => 
+						{
+							if( removeSelection() )
+								updatePaperImage();
+								
+							return _paper.toString();
+						},
+						toDataURL:() => 
+						{
+							if( removeSelection() )
+								updatePaperImage();
+								
+							return _textureCanvas.toDataURL()
+						},
+						getSize:() => SIZE,
+						getTexture,
+						freeze,
+						setHoverEnabled,
+						getHoverEnabled,
+						setPointer,
+						setPointerDown,
+						setRequestedCoords,
+						loadMask,
+						loadTemplate,
+						setTemplateColor,
+						
+						removeSelection:() => 
+						{
+							if( removeSelection() )
+								updatePaperImage();
+						},
+						
+						getElementAttributes,
+						setElementAttributes:( uuid, attributes ) =>
+						{
+							if( setElementAttributes( uuid, attributes ) )
+							{
+								updateElementImage( getElementByUUID( uuid ) );
+								updatePaperImage();
+							}
+						},
+						addText:( text, x, y, attributes ) => 
+						{
+							if( addText( text, x, y, attributes ) != null )
+								updatePaperImage();
+						},
+						addImage:( url, cx, cy, naturalWidth, naturalHeight ) => 
+						{
+							if( addImage( url, cx, cy, naturalWidth, naturalHeight ) != null )
+								updatePaperImage();
+						},
+						removeElement:( uuid ) => 
+						{
+							if( removeElement( uuid ) )
+								updatePaperImage();
+						},
+						isElementLocked:( uuid ) =>
+						{
+							const element = getElementByUUID( uuid );
+							return element ? element.data().locked : false;
+						},
+						lockElement:( uuid ) => 
+						{
+							if( lockElement( uuid ) )
+								updatePaperImage();
+						},
+						unlockElement:( uuid ) => 
+						{
+							if( unlockElement( uuid ) )
+								updatePaperImage();
+						}
+						
+					};
+				};
+				
+				const SVGPatternLibrary = ( { domContainer } ) =>
+				{
+					const _signals =
+					{
+						added:new signals.Signal(),
+						removed:new signals.Signal(), 
+					};
+					
+					const _dataList = [];
+					const _paper = Snap( 1, 1 );
+						  _paper.attr( { 'xmlns:xlink':'http://www.w3.org/1999/xlink' } );
+						  _paper.clear();
+					
+					domContainer.appendChild( _paper.node );
+					
+					let _length = 0;
+					
+					const update = ( patternData ) =>
+					{
+						const canvas = patternData.canvas;
+						const context = canvas.getContext( '2d' );
+						
+						canvas.width = patternData.width * patternData.scale;
+						canvas.height = patternData.height * patternData.scale;
+						
+						context.transform( patternData.scale, 0, 0, patternData.scale, 0, 0 );
+						
+						patternData.pathes.forEach( pathData =>
+						{
+							context.fillStyle = pathData.hex;
+							context.fill( new Path2D( pathData.path ) );
+						} );
+							
+						//patternData.image.src = canvas.toDataURL();
+						patternData.updateTime = new Date().getTime();
+					};
+					
+					const clone = ( patternData ) =>
+					{
+						const clonedPatterData = 
+						{
+							uuid:'SVGPatternLibrary-' + THREE.MathUtils.generateUUID(),
+							//image:new Image(),
+							scale:patternData.scale,
+							canvas:document.createElement( 'canvas' ),
+							width:patternData.width,
+							height:patternData.height,
+							pathes:[],
+						};
+						
+						clonedPatterData.canvas.width = patternData.width;
+						clonedPatterData.canvas.height = patternData.height;
+						clonedPatterData.canvas.getContext( '2d' ).setTransform( patternData.canvas.getContext( '2d' ).getTransform() );
+			
+						patternData.pathes.forEach( pathData => 
+						{
+							clonedPatterData.pathes.push
+							( {
+								name:pathData.name,
+								hex:pathData.hex,
+								path:pathData.path,
+							} );
+						} );
+
+						addMethods( clonedPatterData );
+						update( clonedPatterData );
+
+						return clonedPatterData;
+					};
+					
+					const dispose = ( patternData ) =>
+					{
+						removeMethods( patternData );
+
+						//patternData.image = null;
+						patternData.canvas = null;
+						
+						console.log( 'PatternData.Dispose() -> ' + patternData.uuid );
+					};
+					
+					const addMethods = ( patternData ) =>
+					{
+						patternData.clone = () => clone( patternData );
+						patternData.update = () => update( patternData );
+						patternData.dispose = () => dispose( patternData );
+					};
+					
+					const removeMethods = ( patternData ) =>
+					{
+						patternData.clone =
+						patternData.update = 
+						patternData.dispose = null;
+					};
+					
+					const add = ( url ) => 
+					{
+						Snap.load( url, fragment => 
+						{
+							const uuid = 'SVGPatternLibrary-' + THREE.MathUtils.generateUUID();
+							const patternData = 
+							{
+								uuid:uuid,
+								scale:1,
+								//image:new Image(),
+							};
+							
+							fragment = _paper.append( fragment );
+							
+							const bbox = fragment.getBBox();
+							const width = Math.round( bbox.w );
+							const height = Math.round( bbox.h );
+							
+							const svg = fragment.select( 'svg' );
+
+							const viewBox = svg.attr( 'viewBox' );
+							const scaleX = width / viewBox.width;
+							const scaleY = height / viewBox.height;
+							const canvas = document.createElement( 'canvas' );
+							const context = canvas.getContext( '2d' );
+
+							canvas.width = width;
+							canvas.height = height;
+
+							//context.transform( scaleX, 0, 0, scaleY, 0, 0 );
+
+							patternData.width = width;
+							patternData.height = height;
+							patternData.canvas = canvas;
+							patternData.pathes = [];
+							
+							const matrix = new Snap.Matrix().scale( scaleX, scaleY );
+							
+							svg.selectAll( '[fill]' ).forEach( element => 
+							{	
+								const pathData = 
+								{
+									name:element.attr( 'id' ),
+									hex:Snap.getRGB( element.attr( 'fill' ) ).hex
+								};
+								
+								// TODO: add another shapes
+								if( element.type == 'path' )
+								{
+									pathData.path = element.attr( 'd' );
+								}
+								else if( element.type == 'polygon' )
+								{
+									const points = element.attr( 'points' );
+									
+									let path = 'M ' + points[ 0 ] + ' ' + points[ 1 ] + ', ';
+									
+									for( let i = 2; i < points.length; i += 2 )
+										path += 'L ' + points[ i ] + ' ' + points[ i + 1 ] + ', ';
+
+									path += 'Z';
+
+									pathData.path = path;
+								}
+								
+								// TODO: points.toFixed( 2 ) ???
+
+								pathData.path = Snap.path.map( pathData.path, matrix ).toString();
+
+								patternData.pathes.push( pathData );
+							} );
+							
+							_paper.clear();
+							
+							addMethods( patternData );
+							update( patternData );
+
+							// ---
+							
+							_dataList[ uuid ] = patternData;	
+							_length++;
+							_signals.added.dispatch( uuid/*, url*/ );
+						} );
+					};
+					
+					return {
+						signals:_signals,
+						add,
+						getData:( uuid ) => _dataList[ uuid ],
+					};
+				};
+				
+				const ImageLibrary = () => 
+				{
+					const _signals =
+					{
+						added:new signals.Signal(),
+						removed:new signals.Signal(),
+					};
+					
+					const _dataList = {};
+					
+					let _length = 0;
+					
+					const add = ( url ) => 
+					{
+						const uuid = 'ImageLibrary-' + THREE.MathUtils.generateUUID();
+						const image = new Image();
+
+						_dataList[ uuid ] =
+						{
+							uuid:uuid,
+							url:url,
+							image:image,
+						};
+						
+						const onImageLoaded = ( event ) =>
+						{
+							image.onload = null;
+							
+							const maxSize = 1024;
+							
+							if( image.naturalWidth > maxSize || image.naturalHeight > maxSize )
+							{
+								const scale = Math.min( maxSize / image.naturalWidth, maxSize / image.naturalHeight );
+								const width = Math.round( image.naturalWidth * scale );
+								const height = Math.round( image.naturalHeight * scale );
+								const canvas = document.createElement( 'canvas' );
+								
+								canvas.width = width;
+								canvas.height = height;
+									
+								const context = canvas.getContext( '2d' );
+								
+								context.drawImage( image, 0, 0, width, height );
+									
+								image.onload = onImageLoaded;
+								image.src = canvas.toDataURL();
+							}
+							else 
+							{
+								_length++;
+								_signals.added.dispatch( uuid, url );
+							}
+						};
+
+						image.onload = onImageLoaded;
+						image.src = url;
+					};
+					
+					const getDataURL = ( uuid ) => 
+					{
+						const object = _dataList[ uuid ];
+						
+						return object ? object.url : null;
+					};
+					
+					const getNaturalWidth = ( uuid ) => 
+					{
+						const object = _dataList[ uuid ];
+						
+						return object ? object.image.naturalWidth : 0;
+					};
+					
+					const getNaturalHeight = ( uuid ) => 
+					{
+						const object = _dataList[ uuid ];
+						
+						return object ? object.image.naturalHeight : 0;
+					};
+					
+					const remove = ( uuid ) => 
+					{
+						const object = _dataList[ uuid ];
+						
+						if( object )
+						{
+							if( object.image )
+							{
+								object.image.onload = null;
+								object.image = null;
+							}
+
+							delete _dataList[ uuid ];
+							
+							_length--;
+
+							_signals.removed.dispatch( uuid );
+						}
+					};
+					
+					return {
+						signals:_signals,
+						add,
+						remove,
+						getLength:() => _length,
+						getDataURL,
+						getNaturalWidth,
+						getNaturalHeight,
+					};
+				};
+				
+				const UI = ( { domContainer, textureFactory, imageLibrary, patternLibrary, fontList, templateList, templateURL, templateColorList } ) =>  
+				{	
+					const _signals =
+					{
+						textAdditionRequested:new signals.Signal(),
+						imageAdditionRequested:new signals.Signal(),
+						imageUploaded:new signals.Signal(),
+						exportToSVGRequested:new signals.Signal(),
+						exportToPNGRequested:new signals.Signal(),
+					};
+					
+					const selectTab = ( tab ) =>
+					{
+						_tablist.querySelectorAll( '[role="tab"]' ).forEach( element => 
+						{
+							element.setAttribute( 'aria-selected', element == tab );
+							
+							const controls = element.getAttribute( 'aria-controls' );
+							const tabpanel = document.querySelector( '#' + controls );
+							
+							if( tabpanel )
+							{
+								if( element == tab ) 
+									tabpanel.removeAttribute( 'hidden' );
+								else 
+									tabpanel.setAttribute( 'hidden', 'hidden' );
+							}
+						} );	  
+					};
+					
+					// ----------------------------------------------------------------------
+					
+					const _tabs = document.querySelector( '#tabs' );			  
+					const _tablist = document.querySelector( '#tablist' );
+						
+					const _designTab = document.querySelector( '#tab-design' );
+					const _colorsTab = document.querySelector( '#tab-colors' );
+					const _textTab = document.querySelector( '#tab-text' );
+					const _logoTab = document.querySelector( '#tab-logo' );
+					
+						_designTab.onclick = 
+						_colorsTab.onclick = 
+						_textTab.onclick = 
+						_logoTab.onclick = ( event ) => selectTab( event.target );
+
+					const _designTabPanel = document.querySelector( '#tabpanel-design' );
+					const _colorsTabPanel = document.querySelector( '#tabpanel-colors' );
+					const _textTabPanel = document.querySelector( '#tabpanel-text' );
+					const _logoTabPanel = document.querySelector( '#tabpanel-logo' );
+					
+
+					// ----------------------------------------------------------------------
+					// Шаблоны
+					// ----------------------------------------------------------------------
+
+					const _designTabPanel_Select = document.querySelector( '#tabpanel-design-select' );
+					
+					templateList.forEach( ( template, index ) => 
+					{
+						let option = document.createElement( 'option' );
+							option.textContent = template.url;
+
+						_designTabPanel_Select.appendChild( option );
+						
+						if( template.url == templateURL )
+							_designTabPanel_Select.selectedIndex = index;
+
+					} );
+					
+					const getSelectedTemplateURL = () => 
+					{
+						return _designTabPanel_Select.options[ _designTabPanel_Select.selectedIndex ].textContent;
+					};
+
+					textureFactory.loadTemplate( getSelectedTemplateURL() );
+						
+					_designTabPanel_Select.onchange = () => textureFactory.loadTemplate( getSelectedTemplateURL() );
+					
+					// ----------------------------------------------------------------------
+					// Цвет
+					// ----------------------------------------------------------------------
+					
+					textureFactory.signals.templateLoaded.add( () => 
+					{
+						// console.log( 'templateLoaded' );
+						
+						templateColorList.forEach( color =>
+						{
+							let span = document.createElement( 'span' );
+								span.textContent = color.name;
+								
+							let colorInput = document.createElement( 'input' );
+								colorInput.type = 'color';
+								colorInput.value = color.hex;
+								colorInput.onchange = () => 
+								{
+									color.hex = colorInput.value;
+									
+									if( color.patternData )
+									{
+										color.patternData.dispose();
+										color.patternData = null;
+									}
+											
+									textureFactory.setTemplateColor( color );
+								};
+								
+							let removePatternButton = document.createElement( 'button' );
+								removePatternButton.textContent = 'x';
+								removePatternButton.onclick = () =>
+								{
+									removePatternButton.classList.add( 'hidden' );
+									editPatternButton.classList.add( 'hidden' );
+									
+									patternButton.classList.remove( 'hidden' );
+									colorInput.classList.remove( 'hidden' );
+									
+									colorInput.onchange();
+								};
+								
+							let editPatternButton = document.createElement( 'button' );
+								editPatternButton.textContent = 'Edit Pattern';
+								editPatternButton.onclick = () => 
+								{
+									textureFactory.setHoverEnabled( false );
+									
+									openPatternEditor( color );
+								};
+								
+							let patternButton = document.createElement( 'button' );
+								patternButton.textContent = 'Select Pattern';
+								patternButton.onclick = () =>
+								{
+									textureFactory.setHoverEnabled( false );
+									
+									_patternLibraryDialog.classList.add( 'active' );
+									_patternLibraryDialog.onselect = ( uuid ) =>
+									{
+										if( uuid )
+										{
+											color.patternData = patternLibrary.getData( uuid ).clone();
+											textureFactory.setTemplateColor( color );
+											
+											openPatternEditor( color );
+
+											colorInput.classList.add( 'hidden' );
+											patternButton.classList.add( 'hidden' );
+											
+											removePatternButton.classList.remove( 'hidden' );
+											editPatternButton.classList.remove( 'hidden' );
+										}
+
+										_patternLibraryDialog.onselect = null;
+										_patternLibraryDialog.classList.remove( 'active' );	
+									};
+								};
+								
+	
+							if( color.patternData == null )
+							{
+								removePatternButton.classList.add( 'hidden' );
+								editPatternButton.classList.add( 'hidden' );
+							}
+							else
+							{	
+								patternButton.classList.add( 'hidden' );
+								colorInput.classList.add( 'hidden' );
+							}
+		
+							_colorsTabPanel.appendChild( span );
+							_colorsTabPanel.appendChild( colorInput );
+							_colorsTabPanel.appendChild( patternButton );
+							_colorsTabPanel.appendChild( editPatternButton );
+							_colorsTabPanel.appendChild( removePatternButton );
+							_colorsTabPanel.appendChild( document.createElement( 'br' ) );
+							
+							textureFactory.setTemplateColor( color );
+						} );
+						
+					} );
+					
+					textureFactory.signals.templateUnloaded.add( () => 
+					{
+						// console.log( 'templateUnloaded' );
+						
+						_colorsTabPanel.innerHTML = '';
+					} );
+					
+					selectTab( _designTab );
+					
+					// ----------------------------------------------------------------------
+					// Текст
+					// ----------------------------------------------------------------------
+
+					const _addTextButton = document.querySelector( '#tabpanel-actions-add-text' );
+					const _textControls = document.querySelector( '#tabpanel-text-controls' );
+					const _textInput = document.querySelector( '#tabpanel-text-input' );
+					const _textFontSelect = document.querySelector( '#tabpanel-text-font-select' );
+					const _deleteTextButton = document.querySelector( '#tabpanel-actions-delete-text' );
+					const _textFillColorInput = document.querySelector( '#tabpanel-text-fill-color-input' );
+					const _textStrokeCheckbox = document.querySelector( '#tabpanel-text-stroke' );
+					const _textStrokeColorInput = document.querySelector( '#tabpanel-text-stroke-color-input' );
+					const _textStrokeWidthInput = document.querySelector( '#tabpanel-text-stroke-width-input' );
+					const _textLockedCheckbox = document.querySelector( '#tabpanel-text-locked' );
+					
+					const onAddTextButtonClick = () => 
+					{
+						const textDialog = document.querySelector( '#dialog-add-text' );
+						const textInput = textDialog.querySelector( '.dialog-input' );
+						const addButton = textDialog.querySelector( '.dialog-action-add' );
+						const closeButton = textDialog.querySelector( '.dialog-action-cancel' );
+						
+						const closeDialog = () => 
+						{
+							addButton.onclick = null;
+							closeButton.onclick = null;
+
+							textDialog.classList.remove( 'active' );	
+							textureFactory.setHoverEnabled( true );
+						};
+						
+						closeButton.onclick = closeDialog;
+						addButton.onclick = () => 
+						{
+							if( textInput.value != '' )
+							{
+								closeDialog();
+								
+								_signals.textAdditionRequested.dispatch( textInput.value ); 
+							}
+							else 
+								textInput.focus();
+						};
+
+						textureFactory.setHoverEnabled( false );	
+						textDialog.classList.add( 'active' );
+					};
+					
+					_addTextButton.removeAttribute( 'hidden' );
+					_addTextButton.onclick = onAddTextButtonClick;
+						
+					fontList.forEach( data => 
+					{
+						const option = document.createElement( 'option' );
+						
+						option.textContent = data.name;
+
+						_textFontSelect.appendChild( option );
+					} );
+					
+					const getSelectedFontFamily = () => 
+					{
+						return _textFontSelect.options[ _textFontSelect.selectedIndex ].textContent;
+					};
+					
+					const setSelectedFontFamily = ( name ) => 
+					{
+						for( let i = 0; i < _textFontSelect.options.length; i++ )
+						{
+							if( _textFontSelect.options[ i ].textContent == name )
+							{
+								_textFontSelect.selectedIndex = i;
+								break;
+							}
+						}
+					};
+
+					textureFactory.signals.elementSelected.add( uuid => 
+					{ 
+						const attributes = textureFactory.getElementAttributes( uuid );
+						
+						if( attributes.type != 'text' ) return;
+						
+						// console.log( 'elementSelected > TextElement', attributes );
+						
+						selectTab( _textTab );
+
+						_addTextButton.setAttribute( 'hidden', 'hidden' );
+						_addTextButton.onclick = null;
+						
+						
+						_textControls.removeAttribute( 'hidden' );
+
+						_textInput.value = attributes.text;
+						_textInput.onchange = ( event ) => textureFactory.setElementAttributes( uuid, { text:event.target.value } );
+						
+						_deleteTextButton.onclick = () => textureFactory.removeElement( uuid );
+						
+						setSelectedFontFamily( attributes.fontFamily );
+						
+						_textFontSelect.onchange = () => textureFactory.setElementAttributes( uuid, { fontFamily:getSelectedFontFamily() } );
+						_textFillColorInput.value = attributes.fill;
+						_textFillColorInput.onchange = ( event ) =>  textureFactory.setElementAttributes( uuid, { fill:event.target.value } );	
+						_textStrokeCheckbox.onchange = ( event ) => textureFactory.setElementAttributes( uuid, { stroke:event.target.checked ? _textStrokeColorInput.value : 'none' } );
+						_textStrokeColorInput.onchange = ( event ) => textureFactory.setElementAttributes( uuid, { stroke:event.target.value } );	
+						_textStrokeWidthInput.value = attributes.strokeWidth;
+						_textStrokeWidthInput.onchange = ( event ) => textureFactory.setElementAttributes( uuid, { strokeWidth:event.target.value } );
+						_textLockedCheckbox.checked = textureFactory.isElementLocked( uuid );
+						_textLockedCheckbox.onchange = ( event ) => event.target.checked ? textureFactory.lockElement( uuid ) : textureFactory.unlockElement( uuid );
+						
+						
+						
+						if( attributes.stroke == 'none' )
+						{
+							_textStrokeCheckbox.checked = false;
+							_textStrokeColorInput.setAttribute( 'hidden', 'hidden' );
+							_textStrokeWidthInput.setAttribute( 'hidden', 'hidden' );
+						}
+						else 
+						{
+							_textStrokeCheckbox.checked = true;
+							_textStrokeColorInput.removeAttribute( 'hidden' );
+							_textStrokeColorInput.value = attributes.stroke;
+							_textStrokeWidthInput.removeAttribute( 'hidden' );
+						}
+						
+						const onTextAttributesChanged = ( changedUUID, changedAttributes ) => 
+						{
+							if( uuid == changedUUID )
+							{
+								// console.log( 'elementAttributesChanged:', changedAttributes );
+								
+								if( changedAttributes.hasOwnProperty( 'stroke' ) )
+								{
+									if( changedAttributes.stroke == 'none' )
+									{
+										_textStrokeCheckbox.checked = false;
+										_textStrokeColorInput.setAttribute( 'hidden', 'hidden' );
+										_textStrokeWidthInput.setAttribute( 'hidden', 'hidden' );
+									}
+									else 
+									{
+										_textStrokeCheckbox.checked = true;
+										_textStrokeColorInput.removeAttribute( 'hidden' );
+										_textStrokeColorInput.value = changedAttributes.stroke;
+										_textStrokeWidthInput.removeAttribute( 'hidden' );
+									}
+								}
+								
+								if( changedAttributes.hasOwnProperty( 'strokeWidth' ) )
+									_textStrokeWidthInput.value = changedAttributes.strokeWidth;
+
+								if( changedAttributes.hasOwnProperty( 'fontFamily' ) ) 
+									setSelectedFontFamily( changedAttributes.fontFamily );
+							}
+							else 
+								console.warn( 'elementAttributesChanged:', { uuid:uuid, changedUUID:changedUUID } );
+						};
+						
+						const onTextLocked = ( lockedUUID ) => 
+						{
+							if( lockedUUID == uuid )
+								_textLockedCheckbox.checked = true;
+						};
+						
+						const onTextUnlocked = ( lockedUUID ) => 
+						{
+							if( lockedUUID == uuid )
+								_textLockedCheckbox.checked = false;
+						};
+						
+						const onTextDeselected = deselectedUUID => 
+						{ 
+							if( uuid == deselectedUUID )
+							{
+								// console.log( 'elementDeselected' );
+								
+								_addTextButton.removeAttribute( 'hidden' );
+								_addTextButton.onclick = onAddTextButtonClick;
+								
+								_textControls.setAttribute( 'hidden', 'hidden' );
+								_textInput.onchange = null;
+								_deleteTextButton.onclick = null;
+								_textFontSelect.onchange = null;
+								_textFillColorInput.onchange = null;
+								_textStrokeCheckbox.onchange = null;
+								_textStrokeColorInput.onchange = null;
+								_textLockedCheckbox.onchange = null;
+
+								textureFactory.signals.elementAttributesChanged.remove( onTextAttributesChanged );
+								textureFactory.signals.elementDeselected.remove( onTextDeselected );
+								textureFactory.signals.elementLocked.remove( onTextLocked );
+								textureFactory.signals.elementLocked.remove( onTextUnlocked );
+							}
+							else 
+								console.warn( 'elementDeselected:', { uuid:uuid, deselectedUUID:deselectedUUID } );
+						}
+
+						textureFactory.signals.elementAttributesChanged.add( onTextAttributesChanged );
+						textureFactory.signals.elementDeselected.add( onTextDeselected );
+						textureFactory.signals.elementLocked.add( onTextLocked );
+						textureFactory.signals.elementUnlocked.add( onTextUnlocked );
+					} );
+					
+					// ----------------------------------------------------------------------
+					// Мотивы
+					// ----------------------------------------------------------------------
+					
+					const _patternEditorDialog = document.querySelector( '#dialog-pattern-editor' );
+					
+					_patternEditorDialog.querySelector( '.dialog-action-close' ).onclick = ( event ) => 
+					{
+						closePatternEditor();
+						textureFactory.setHoverEnabled( true );		
+					};
+					
+					const closePatternEditor = () =>
+					{
+						_patternEditorDialog.classList.remove( 'active' );
+						_patternEditorDialog.querySelector( '.dialog-content' ).innerHTML = '';
+					};
+					
+					const openPatternEditor = ( color ) =>
+					{
+						_patternEditorDialog.classList.add( 'active' );
+						
+						const content = _patternEditorDialog.querySelector( '.dialog-content' );
+						
+						const preview = document.createElement( 'div' );
+						
+						preview.classList.add( 'dialog-pattern-preview' );
+						preview.style.background = 'url(' + color.patternData.canvas.toDataURL() + ')';
+						
+						content.appendChild( preview );
+						//content.appendChild( color.patternData.image );
+						content.appendChild( document.createElement( 'br' ) );
+						content.appendChild( document.createElement( 'br' ) );
+						
+						for( let i = 0; i < color.patternData.pathes.length; i++ )
+						{
+							let pathData = color.patternData.pathes[ i ];
+							let colorInput = document.createElement( 'input' );
+								colorInput.type = 'color';
+								colorInput.value = pathData.hex;
+								colorInput.onchange = () => 
+								{
+									pathData.hex = colorInput.value;	
+									color.patternData.update();
+									textureFactory.setTemplateColor( color );
+									preview.style.background = 'url(' + color.patternData.canvas.toDataURL() + ')';
+								};
+								
+							content.appendChild( colorInput );
+						}
+						
+						content.appendChild( document.createElement( 'br' ) );
+						content.appendChild( document.createElement( 'br' ) );
+						
+						const scaleStep = 0.05;
+						const maxScale = 1.8;
+						const minScale = 0.2;
+						const decreaseScaleButton = document.createElement( 'button' );
+						const increaseScaleButton = document.createElement( 'button' );
+						
+						decreaseScaleButton.textContent = '-';
+						decreaseScaleButton.onclick = () =>
+						{
+							if( color.patternData.scale > minScale )
+							{
+								color.patternData.scale -= scaleStep;
+								color.patternData.update();
+								textureFactory.setTemplateColor( color );
+								preview.style.background = 'url(' + color.patternData.canvas.toDataURL() + ')';
+							}
+						};
+						
+						increaseScaleButton.textContent = '+';
+						increaseScaleButton.onclick = () =>
+						{
+							if( color.patternData.scale < maxScale )
+							{
+								color.patternData.scale += scaleStep;
+								color.patternData.update();
+								textureFactory.setTemplateColor( color );
+								preview.style.background = 'url(' + color.patternData.canvas.toDataURL() + ')';
+							}
+						};
+						
+						content.appendChild( decreaseScaleButton );
+						content.appendChild( increaseScaleButton );
+					};
+					
+					const _patternLibraryDialog = document.querySelector( '#dialog-pattern-library' );
+					
+					_patternLibraryDialog.onselect = null;
+					_patternLibraryDialog.querySelector( '.dialog-action-close' ).onclick = ( event ) => 
+					{
+						textureFactory.setHoverEnabled( true );
+						
+						_patternLibraryDialog.classList.remove( 'active' );	
+						
+						if( _patternLibraryDialog.onselect )
+							_patternLibraryDialog.onselect( null );
+					};
+					
+					patternLibrary.signals.added.add( uuid => 
+					{
+						const domContainer = _patternLibraryDialog.querySelector( '.dialog-image-list' );
+						
+						domContainer.insertAdjacentHTML
+						( 
+							'beforeend', 
+								'<div data-uuid="' + uuid + '" class="dialog-image-list-item">' +
+									'<div class="dialog-image-list-preview" style="background:url(' + patternLibrary.getData( uuid ).canvas.toDataURL() + ')"></div>' + 
+									// '<image class="dialog-image-list-item-image" src="' + patternLibrary.getData( uuid ).image.src + '"></image>' + 
+									'<button>Use</button>' + 
+								'</div>' 
+						);
+						
+						const div = domContainer.querySelector( '[data-uuid="' + uuid + '"]' );
+
+						div.querySelector( 'button' ).onclick = () =>
+						{
+							if( _patternLibraryDialog.onselect )
+								_patternLibraryDialog.onselect( uuid );
+						};
+
+					} );	
+					
+					imageLibrary.signals.removed.add( uuid => 
+					{
+						const domContainer = _imageLibraryDialog.querySelector( '.dialog-image-list' );
+						const div = domContainer.querySelector( '[data-uuid="' + uuid + '"]' );
+						
+						if( div ) div.remove();
+						
+						if( imageLibrary.getLength() == 0 )
+						{
+							_imageLibraryButton.classList.add( 'hidden' );
+							_imageLibraryDialog.classList.remove( 'active' )
+						}
+					} );
+					
+					// ----------------------------------------------------------------------
+					// Изображения
+					// ----------------------------------------------------------------------
+					
+					const _logoControls = document.querySelector( '#tabpanel-logo-controls' );
+					const _logoLockedCheckbox = document.querySelector( '#tabpanel-logo-locked' );
+
+					const _fileInput = document.querySelector( '#tabpanel-logo-file-input' );
+					const _uploadButton = document.querySelector( '#tabpanel-actions-upload-image' );
+					const _imageLibraryButton = document.querySelector( '#tabpanel-actions-show-image-library' );
+					const _imageLibraryDialog = document.querySelector( '#dialog-image-library' );
+					
+					
+					_imageLibraryDialog.querySelector( '.dialog-action-close' ).onclick = ( event ) => 
+					{
+						textureFactory.setHoverEnabled( true );
+						_imageLibraryDialog.classList.remove( 'active' );	
+					};	
+					
+					_imageLibraryButton.onclick = ( event ) => 
+					{
+						textureFactory.setHoverEnabled( false );
+						_imageLibraryDialog.classList.add( 'active' );
+					}
+
+					_fileInput.onchange = ( event ) => 
+					{
+						const fileReader = new FileReader();
+							fileReader.readAsDataURL( event.target.files[ 0 ] );
+							fileReader.onload = ( event ) => _signals.imageUploaded.dispatch( event.target.result );
+							
+						_fileInput.value = '';
+					};
+					
+					_uploadButton.onclick = () => _fileInput.click();
+					
+					imageLibrary.signals.added.add( ( uuid, url ) => 
+					{
+						// console.log( uuid, url );
+	
+						const image = new Image();
+						const addButton = document.createElement( 'button' );
+						const removeButton = document.createElement( 'button' );
+						const div = document.createElement( 'div' );
+						const domContainer = _imageLibraryDialog.querySelector( '.dialog-image-list' );
+						
+						image.src = url;
+						image.classList.add( 'dialog-image-list-item-image' );
+					
+						addButton.textContent = 'Add';
+						addButton.onclick = () => 
+						{
+							_imageLibraryDialog.classList.remove( 'active' );
+							_signals.imageAdditionRequested.dispatch( uuid );
+						};
+
+						removeButton.textContent = 'Delete';
+						removeButton.onclick = () => imageLibrary.remove( uuid );
+
+						div.classList.add( 'dialog-image-list-item' );
+						div.dataset[ 'uuid' ] = uuid;
+						div.appendChild( image );
+						div.appendChild( addButton );
+						div.appendChild( removeButton );
+							
+						domContainer.appendChild( div );
+							
+						_imageLibraryButton.classList.remove( 'hidden' );
+						_imageLibraryDialog.classList.add( 'active' );
+					} );	
+					
+					imageLibrary.signals.removed.add( uuid => 
+					{
+						const domContainer = _imageLibraryDialog.querySelector( '.dialog-image-list' );
+						const div = domContainer.querySelector( '[data-uuid="' + uuid + '"]' );
+						
+						if( div ) div.remove();
+						
+						if( imageLibrary.getLength() == 0 )
+						{
+							_imageLibraryButton.classList.add( 'hidden' );
+							_imageLibraryDialog.classList.remove( 'active' )
+						}
+					} );
+					
+					textureFactory.signals.elementSelected.add( uuid => 
+					{ 
+						const attributes = textureFactory.getElementAttributes( uuid );
+						
+						if( attributes.type != 'image' ) return;
+						
+						// console.log( 'elementSelected > ImageElement', attributes );
+						
+						selectTab( _logoTab );
+						
+						_uploadButton.setAttribute( 'hidden', 'hidden' );
+						_imageLibraryButton.setAttribute( 'hidden', 'hidden' );
+						_logoControls.removeAttribute( 'hidden' );
+						
+						_logoLockedCheckbox.checked = textureFactory.isElementLocked( uuid );
+						_logoLockedCheckbox.onchange = ( event ) => event.target.checked ? textureFactory.lockElement( uuid ) : textureFactory.unlockElement( uuid );
+						
+						const onLogoLocked = ( lockedUUID ) => 
+						{
+							if( lockedUUID == uuid )
+								_logoLockedCheckbox.checked = true;
+						};
+						
+						const onLogoUnlocked = ( lockedUUID ) => 
+						{
+							if( lockedUUID == uuid )
+								_logoLockedCheckbox.checked = false; 
+						};
+						
+						const onLogoDeselected = deselectedUUID => 
+						{ 
+							if( uuid == deselectedUUID )
+							{
+								// console.log( 'elementDeselected' );
+
+								_uploadButton.removeAttribute( 'hidden' );
+								_imageLibraryButton.removeAttribute( 'hidden' );
+								_logoControls.setAttribute( 'hidden', 'hidden' );
+
+								_logoLockedCheckbox.onchange = null;
+
+								textureFactory.signals.elementDeselected.remove( onLogoDeselected );
+								textureFactory.signals.elementLocked.remove( onLogoLocked );
+								textureFactory.signals.elementLocked.remove( onLogoUnlocked );
+							}
+							else 
+								console.warn( 'elementDeselected:', { uuid:uuid, deselectedUUID:deselectedUUID } );
+						}
+
+						textureFactory.signals.elementDeselected.add( onLogoDeselected );
+						textureFactory.signals.elementLocked.add( onLogoLocked );
+						textureFactory.signals.elementUnlocked.add( onLogoUnlocked );
+					} );
+					
+					document.querySelector( '#export-to-svg-button' ).onclick = () => _signals.exportToSVGRequested.dispatch();
+					document.querySelector( '#export-to-png-button' ).onclick = () => _signals.exportToPNGRequested.dispatch();
+					
+						
+					// ----------------------------------------------------------------------
+					
+					return {
+						signals:_signals,
+						getSelectedFontFamily,
+						getSelectedTemplateURL,
+					}
+				};
+				
+				const loadFonts = ( fontList, onComplete ) => 
+				{
+					let loaded = 0;
+					let total = 0; 
+					
+					fontList.forEach( fontObject => 
+					{
+						total++;
+						
+						fetch( fontObject.url ).then( response => 
+						{
+							response.arrayBuffer().then( buffer => 
+							{
+								const reader = new FileReader();
+								
+								reader.onload = () => 
+								{
+									fontObject.dataURL = reader.result;
+									
+									new FontFace( fontObject.name, 'url("' + fontObject.dataURL + '")' ).load().then( font => 
+									{
+										fontObject.font = font;
+										document.fonts.add( font );
+
+										if( ++loaded == total ) 
+											onComplete( fontList );												
+									} );	
+								};
+								reader.onerror = () => console.error( reader.error );
+								reader.readAsDataURL( new Blob( [ buffer ], { type:fontObject.type } ) );
+							
+							} ).catch( error => console.error( error ) );
+							
+						} ).catch( error => console.error( error ) );
+					} );
+					
+				};
+				
+				const loadModel = ( url, onComplete ) =>
+				{
+					const loader = new THREE.GLTFLoader();
+					
+					loader.load
+					( 
+						url, 
+						( model ) => onComplete( model ), 
+						null, 
+						( error ) => console.trace( error ) 
+					);
+				};
+				
+				loadFonts
+				( 
+					[					
+						{ name:'Roboto Bold', url:'fonts/Roboto-Bold.ttf', type:'application/x-font-ttf' },
+						{ name:'Roboto Regular', url:'fonts/Roboto-Regular.ttf', type:'application/x-font-ttf' },
+						{ name:'RockSalt', url:'fonts/RockSalt-Regular.ttf', type:'application/x-font-ttf' },
+						{ name:'Satisfy', url:'fonts/Satisfy-Regular.ttf', type:'application/x-font-ttf' },
+						{ name:'Telegraf Regular', url:'fonts/Telegraf-Regular.ttf', type:'application/x-font-ttf' },
+						{ name:'Telegraf Bold', url:'fonts/Telegraf-UltraBold.ttf', type:'application/x-font-ttf' },
+						{ name:'Licorice', url:'fonts/Licorice-Regular.ttf', type:'application/x-font-ttf' },
+						{ name:'Mango Scribble', url:'fonts/mango-scribble.scribble-regular.otf', type:'font/opentype' },
+					], 
+					( fontList ) => loadModel
+					( 
+						'model/Tshirt.glb', // 'tshirt.glb', //
+						( model ) => 
+						{
+							// App
+							
+							let maskLoaded = false;
+							let templateLoaded = false;
+							let templateURL = null;
+							
+							const importData = null;
+							const templateColorList =  
+							[
+								{ id:'color1', name:'Color 1', hex:'#FFCC00' },
+								{ id:'color2', name:'Color 2', hex:'#00CCFF' },
+								{ id:'color3', name:'Color 3', hex:'#FFFFFF' },
+							];
+							
+							/*if( importData != null )
+							{
+								templateURL = importData.templateURL;
+								
+								if( importData.templateColorList )
+								{
+									importData.templateColorList.forEach( color => 
+									{
+										let templateColor = templateColorList.filter( templateColor => { return templateColor.id == color.id } )[ 0 ];
+										
+										if( templateColor ) 
+											templateColor.hex = color.hex;
+									} );
+								}
+							}*/
+							const onTextureFactoryReady = () => 
+							{
+								// TODO: Import Data
+								// add objects from JSON
+							};
+
+							
+							const textureFactory = TextureFactory
+							( {
+								domContainer:document.querySelector( '#texture-factory-container' ),
+								fontList:fontList,
+								snaplineList:
+								[
+									{ x1:524, y1:695, x2:524, y2:2010 }, // front									
+									{ x1:1540, y1:695, x2:1540, y2:2010 }, // back					
+								],
+							} );
+							
+							const imageLibrary = ImageLibrary();
+							
+							const svgPatternLibrary = SVGPatternLibrary( { domContainer:document.querySelector( '#svg-pattern-library-container' ), } );
+							
+							const view3d = View3D
+							( { 
+								domContainer:document.querySelector( '#viewport-container' ), 
+								textureFactory:textureFactory, 
+								model:model, 
+								matCapURL:'Uv/matcap.png', 
+								normalMapURL:'Uv/Tshirt_N.jpg',
+							} );
+							
+							const ui = UI
+							( {
+								domContainer:document.querySelector( '#ui' ), 
+								textureFactory:textureFactory, 
+								imageLibrary:imageLibrary, 
+								patternLibrary:svgPatternLibrary,
+								fontList:fontList,
+								templateList:
+								[
+									{ preview:'', url:'designs/pattern01.svg' },
+									{ preview:'', url:'designs/pattern02.svg' },
+									{ preview:'', url:'designs/pattern03.svg' },
+									{ preview:'', url:'designs/pattern04.svg' },
+									{ preview:'', url:'designs/pattern05.svg' },
+									{ preview:'', url:'designs/pattern06.svg' },
+									{ preview:'', url:'designs/pattern07.svg' },
+									{ preview:'', url:'designs/pattern08.svg' },
+									{ preview:'', url:'designs/pattern09.svg' },
+									{ preview:'', url:'designs/pattern10.svg' },
+									{ preview:'', url:'designs/pattern11.svg' },
+									{ preview:'', url:'designs/pattern12.svg' },
+									{ preview:'', url:'designs/pattern13.svg' },
+                                    { preview:'', url:'designs/exported.svg' },
+								], 
+								templateURL:templateURL, 
+								templateColorList:templateColorList,
+							} );
+							
+							
+
+							textureFactory.loadMask( 'Uv/mask.svg' );
+							textureFactory.signals.ttime.add( milliseconds => document.querySelector( '#ttime' ).textContent = 'render:' + milliseconds + 'ms' );
+							textureFactory.signals.maskLoaded.addOnce( () => 
+							{
+								maskLoaded = true;
+								
+								if( templateLoaded ) onTextureFactoryReady();
+							} );
+							
+							textureFactory.signals.templateLoaded.addOnce( () => 
+							{
+								templateLoaded = true;
+								
+								if( maskLoaded ) onTextureFactoryReady();
+							} );
+							
+							ui.signals.imageUploaded.add( url => imageLibrary.add( url ) );	
+							ui.signals.imageAdditionRequested.add( uuid => 
+							{
+								textureFactory.freeze( true );
+								view3d.freeze( true );
+								
+								const onDocMouseDown = ( event ) =>
+								{
+									const uv = view3d.screenToUV( event.clientX, event.clientY );
+
+									if( uv.isPointOnSurface ) 
+									{
+										textureFactory.addImage
+										( 
+											imageLibrary.getDataURL( uuid ), 
+											uv.x * textureFactory.getSize(), 
+											uv.y * textureFactory.getSize(),
+											imageLibrary.getNaturalWidth( uuid ),
+											imageLibrary.getNaturalHeight( uuid )
+										);
+									}
+									else 
+										console.log( 'Outside the surface' );
+
+									textureFactory.freeze( false );
+									view3d.freeze( false );
+									
+									document.removeEventListener( 'mousedown', onDocMouseDown );
+								};
+								
+								document.addEventListener( 'mousedown', onDocMouseDown );									
+							} );
+							
+							ui.signals.textAdditionRequested.add( text => 
+							{
+								textureFactory.freeze( true );	
+								view3d.freeze( true );
+								
+								const onDocMouseDown = ( event ) =>
+								{
+									const uv = view3d.screenToUV( event.clientX, event.clientY );
+
+									if( uv.isPointOnSurface ) 
+									{
+										textureFactory.addText( text, uv.x * textureFactory.getSize(), uv.y * textureFactory.getSize(), 
+										{ 
+											fontFamily:ui.getSelectedFontFamily(),
+											fontSize:'96',
+											fill:'white',
+											stroke:'black',
+											strokeWidth:5,
+										} );
+									}
+									else console.log( 'Outside the surface' );
+
+									textureFactory.freeze( false );
+									view3d.freeze( false );
+									
+									document.removeEventListener( 'mousedown', onDocMouseDown );
+								};
+										
+								document.addEventListener( 'mousedown', onDocMouseDown );
+							} );
+							
+							ui.signals.exportToSVGRequested.add( () => 
+							{
+								const a = document.createElement( 'a' );
+								
+								a.href = URL.createObjectURL( new Blob( [ textureFactory.toSVGString() ], { type:'text/svg' } ) );
+								a.download = 'exported.svg';        
+								a.click();        
+
+							} );
+							
+							ui.signals.exportToPNGRequested.add( () => 
+							{
+								const a = document.createElement( 'a' );
+								
+								a.href = textureFactory.toDataURL();
+								a.download = 'exported.png';        
+								a.click();        
+
+							} );
+							
+							// SVGPatternLibrary
+							[
+								{ url:'svgpatterns/666.svg' },
+								{ url:'svgpatterns/667.svg' },
+								{ url:'svgpatterns/681.svg' },
+								{ url:'svgpatterns/f689.svg' },
+								{ url:'svgpatterns/715.svg' },
+								{ url:'svgpatterns/727.svg' },
+								{ url:'svgpatterns/2274.svg' },							
+								{ url:'svgpatterns/665-1.svg' },
+								{ url:'svgpatterns/669-1.svg' },
+								{ url:'svgpatterns/711-2.svg' },
+								{ url:'svgpatterns/1091-1.svg' },
+								{ url:'svgpatterns/1991-1.svg' },
+								{ url:'svgpatterns/2561-1.svg' },
+								{ url:'svgpatterns/695.svg' },
+								
+							].forEach( pattern => svgPatternLibrary.add( pattern.url ) );
+							
+							// ImageLibrary
+							
+							// TODO: load
+								
+						} 
+					) 
+				);
+					
+			};
+		</script>
+	</body>
+</html>
